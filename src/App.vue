@@ -53,6 +53,10 @@ import { Component, Vue } from 'vue-property-decorator';
 })
 export default class App extends Vue {
   private drawer: boolean = true;
+
+  private mounted(): void {
+    this.$store.dispatch('retrieveConfigurations');
+  }
 }
 </script>
 

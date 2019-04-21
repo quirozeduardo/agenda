@@ -14,11 +14,14 @@ switch ($section) {
     case 'deleteValue':
         $response = deleteValue($mysql, $dataUsage->_id);
         break;
+    case 'retrieveConfigurations':
+        $response = retrieveConfigurations($mysql);
+        break;
 }
 echoResponse();
 function storeValue(MySQLConnection $mysql, $key, $value) {
     $query = "INSERT INTO 
-            system_configuration(key, value, created_at, updated_at) 
+            system_configuration(`key`, `value`, created_at, updated_at) 
             VALUES ('$key', '$value', now(), now())";
     try {
         $mysql->query($query);
@@ -29,6 +32,7 @@ function storeValue(MySQLConnection $mysql, $key, $value) {
         ];
         return $object;
     }catch (Exception $e) {
+        var_dump($e->getMessage());
         return null;
     }
 }
@@ -42,7 +46,7 @@ function deleteValue(MySQLConnection $mysql, $id) {
     }
 }
 function updateValue(MySQLConnection $mysql, $id, $key, $value) {
-    $query = "UPDATE system_configuration SET key='$key', value='$value', updated_at=now() WHERE id=$id";
+    $query = "UPDATE system_configuration SET `key`='$key', `value`='$value', updated_at=now() WHERE id=$id";
     try {
         $mysql->query($query);
         return true;
@@ -51,7 +55,7 @@ function updateValue(MySQLConnection $mysql, $id, $key, $value) {
     }
 }
 function retrieveValue(MySQLConnection $mysql, $key) {
-    $query = "SELECT * FROM system_configuration WHERE key='$key'";
+    $query = "SELECT * FROM system_configuration WHERE `key`='$key'";
     $objects = [];
     try {
         $result = $mysql->query($query);
@@ -60,6 +64,24 @@ function retrieveValue(MySQLConnection $mysql, $key) {
                 'id' => $line[0],
                 'key' => $line[1],
                 'value' => $line[2]
+            ];
+            array_push($objects, $object);
+        }
+
+    }catch (Exception $e) {
+    }
+    return $objects;
+}
+function retrieveConfigurations(MySQLConnection $mysql) {
+    $query = "SELECT * FROM system_configuration";
+    $objects = [];
+    try {
+        $result = $mysql->query($query);
+        while ($line = $result->fetch_row()) {
+            $object = [
+                'id' => $line[0],
+                'key' => $line[1],
+                'value' => $line[2],
             ];
             array_push($objects, $object);
         }

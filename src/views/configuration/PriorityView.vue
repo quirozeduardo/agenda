@@ -5,7 +5,7 @@
                 Priorities
                 <v-spacer></v-spacer>
                 <v-text-field v-model="search" append-icon="fa-search" label="Search" single-line hide-details></v-text-field>
-                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Task</v-btn>
+                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Priority</v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="this.$store.state.priorities" :search="search">
                 <template v-slot:items="props">
@@ -25,13 +25,19 @@
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">User Profile</span>
+                    <span class="headline">Priority</span>
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
                         <v-layout wrap>
                             <v-flex xs12>
                                 <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field label="Importance*" v-model="importanceInsert" required></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field label="Color" v-model="colorInsert" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field label="Description" v-model="descriptionInsert"></v-text-field>
@@ -84,6 +90,8 @@
 
         private nameInsert: string = '';
         private descriptionInsert: string = '';
+        private importanceInsert: number = 1;
+        private colorInsert: string = '';
         private headers = [
             { text: 'Name', value: 'name', align: 'center' },
             { text: 'Description', value: 'description', align: 'center' },
@@ -91,7 +99,7 @@
         ];
 
         private saveItem(): void {
-            if (this.nameInsert.trim().length > 0) {
+            if (this.nameInsert.trim().length > 0 && Number(this.importanceInsert)>0 && Number(this.importanceInsert)<=100) {
                 if(this.update === true) {
                     this.updateItem(this.item);
                 }else{
@@ -107,10 +115,14 @@
             if (item === null) {
                 this.nameInsert = '';
                 this.descriptionInsert = '';
+                this.colorInsert = '';
+                this.importanceInsert = 1;
                 this.update = false;
             }else {
                 this.nameInsert = item.name;
                 this.descriptionInsert = item.description;
+                this.colorInsert = item.color;
+                this.importanceInsert = item.importance;
                 this.update = true;
             }
         }
@@ -122,6 +134,8 @@
             let item = new Priority();
             item.name = this.nameInsert;
             item.description = this.descriptionInsert;
+            item.color = this.colorInsert;
+            item.importance = Number(this.importanceInsert);
             this.$store.dispatch('storePriority',item);
         }
         private updateItem(item: Priority): void {
@@ -129,6 +143,9 @@
             itemUpdate.id = this.item.id;
             itemUpdate.name = this.nameInsert;
             itemUpdate.description = this.descriptionInsert;
+            itemUpdate.color = this.colorInsert;
+            itemUpdate.importance = Number(this.importanceInsert);
+
             this.$store.dispatch('updatePriority',itemUpdate);
         }
         private deleteItem(item: Priority): void {

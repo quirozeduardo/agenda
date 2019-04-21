@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import UserRegister from "../objects/UserRegister";
+import UserRegister from "../objects/types/UserRegister";
 import UrlMaster from "../UrlMaster";
-import UserLogin from "../objects/UserLogin";
+import UserLogin from "../objects/types/UserLogin";
 import router from "../router";
 import Category from "../objects/types/Category";
 import ImpactObject from "../objects/types/Impact";
@@ -11,6 +11,9 @@ import Impact from "../objects/types/Impact";
 import Priority from "../objects/types/Priority";
 import Status from "../objects/types/Status";
 import Task from "../objects/types/Task";
+import User from "../objects/types/User";
+import {Configuration} from "../objects/types/Configuration";
+import {FilterTastk} from "../objects/interface/FilterTastk";
 
 Vue.use(Vuex);
 
@@ -70,6 +73,8 @@ export default new Vuex.Store({
               let index = state.impacts.indexOf(result[0]);
               state.impacts[index].name = data.name;
               state.impacts[index].description = data.description;
+              state.priorities[index].color = data.color;
+              state.priorities[index].importance = data.importance;
           }
         },
 
@@ -93,6 +98,8 @@ export default new Vuex.Store({
               let index = state.priorities.indexOf(result[0]);
               state.priorities[index].name = data.name;
               state.priorities[index].description = data.description;
+              state.priorities[index].color = data.color;
+              state.priorities[index].importance = data.importance;
           }
         },
 
@@ -116,13 +123,53 @@ export default new Vuex.Store({
               let index = state.statuses.indexOf(result[0]);
               state.statuses[index].name = data.name;
               state.statuses[index].description = data.description;
+              state.statuses[index].color = data.color;
+              state.statuses[index].override = data.override;
           }
         },
 
       //TASKS
         SET_TASKS(state, data: Task[]){
             state.tasks = data;
-        }
+        },
+      ADD_TASK(state, data: Task){
+          state.tasks.push(data);
+      },
+      REMOVE_TASK(state, id: number){
+          let result = state.tasks.filter((item: Task) => { return item.id === id});
+          if (result.length > 0) {
+              let index = state.tasks.indexOf(result[0]);
+              state.tasks.splice(index, 1);
+          }
+      },
+      UPDATE_TASK_STATUS(state, data: Task) {
+
+      },
+
+        //USERS
+      SET_USERS(state, data: User[]){
+          state.users = data;
+      },
+      SET_LOGGED_USER(state, data: User){
+          state.loggedUser = data;
+      },
+
+      //CONFIGURATION
+      SET_CONFIGURATIONS(state, data: Configuration[]) {
+          state.configurations = data;
+      },
+      ADD_CONFIGURATION(state, data: Configuration) {
+            state.configurations.push(data);
+      },
+      UPDATE_CONFIGURATION(state, data: Configuration) {
+          let result = state.configurations.filter((item: Configuration) => { return item.id === data.id});
+          if (result.length > 0) {
+              let index = state.configurations.indexOf(result[0]);
+              state.configurations[index].key = data.key;
+              state.configurations[index].value = data.value;
+          }
+      },
+
   },
   actions: {
         async registerUser(context, data: UserRegister): Promise<boolean> {
@@ -153,7 +200,7 @@ export default new Vuex.Store({
           return  success;
         },
         async login(context, data: UserLogin): Promise<string|null> {
-          let token = null;
+          let returnResponse = null;
           try {
             let response = await Vue.axios.post(UrlMaster.URL_AUTH,{
               action: 'auth',
@@ -164,17 +211,31 @@ export default new Vuex.Store({
               }
             });
             if (response.data.response !== null) {
-              token = response.data.response;
+                returnResponse = response.data.response;
+                let token = response.data.response.token;
+                let userResponse = response.data.response.user;
+                let user = new User();
+                user.id = Number(userResponse.id);
+                user.name = userResponse.name;
+                user.userName = userResponse.userName;
+                user.lastName = userResponse.lastName;
+                user.email = userResponse.email;
+                user.created_at = userResponse.created_at;
+                user.updated_at = userResponse.updated_at;
+                user.deleted_at = userResponse.deleted_at;
+
               localStorage.setItem('access_token',token);
-              localStorage.setItem('user_email',data.email);
+              localStorage.setItem('user_email',user.email);
               context.commit('SET_ACCESS_TOKEN', token);
-              context.commit('SET_USER_EMAIL', data.email);
+              context.commit('SET_USER_EMAIL', user.email);
               context.commit('SET_LOGGED', true);
+              context.commit('SET_LOGGED_USER', user);
+
             }
           }catch (e) {
 
           }
-          return token;
+          return returnResponse;
         },
         async loggedIn(context): Promise<boolean> {
           try {
@@ -186,8 +247,19 @@ export default new Vuex.Store({
                 email: context.state.userEmail,
               }
             });
-            if (response.data.response === true) {
+            if (response.data.response != null) {
+                let userResponse = response.data.response;
+                let user = new User();
+                user.id = Number(userResponse.id);
+                user.name = userResponse.name;
+                user.userName = userResponse.userName;
+                user.lastName = userResponse.lastName;
+                user.email = userResponse.email;
+                user.created_at = userResponse.created_at;
+                user.updated_at = userResponse.updated_at;
+                user.deleted_at = userResponse.deleted_at;
               context.commit('SET_LOGGED', true);
+              context.commit('SET_LOGGED_USER', user);
               return true;
             }
           }catch (e) {
@@ -210,6 +282,7 @@ export default new Vuex.Store({
             context.commit('SET_ACCESS_TOKEN', '');
             context.commit('SET_USER_EMAIL', '');
             context.commit('SET_LOGGED', false);
+              context.commit('SET_LOGGED_USER', null);
           }catch (e) {
 
           }
@@ -286,6 +359,8 @@ export default new Vuex.Store({
                   object.id = Number(responseData.id);
                   object.name = responseData.name;
                   object.description = responseData.description;
+                  object.importance = Number(responseData.importance);
+                  object.color = responseData.color;
                   context.commit('ADD_IMPACT',object);
               }
           }catch (e) {
@@ -306,6 +381,8 @@ export default new Vuex.Store({
               obj.id = Number(object.id);
               obj.name = object.name;
               obj.description = object.description;
+              obj.importance = Number(object.importance);
+              obj.color = object.color;
               objects.push(obj);
           }
           context.commit('SET_IMPACTS',objects);
@@ -344,6 +421,8 @@ export default new Vuex.Store({
                   object.id = Number(responseData.id);
                   object.name = responseData.name;
                   object.description = responseData.description;
+                  object.importance = Number(responseData.importance);
+                  object.color = responseData.color;
                   context.commit('ADD_PRIORITY',object);
               }
           }catch (e) {
@@ -364,6 +443,8 @@ export default new Vuex.Store({
               obj.id = Number(object.id);
               obj.name = object.name;
               obj.description = object.description;
+              obj.importance = Number(object.importance);
+              obj.color = object.color;
               objects.push(obj);
           }
           context.commit('SET_PRIORITIES',objects);
@@ -388,7 +469,46 @@ export default new Vuex.Store({
               context.commit('REMOVE_PRIORITY',data.id);
           }
         },
+      async updateTaskStatus(context, data: Task): Promise<void> {
+          let response = await Vue.axios.post(UrlMaster.URL_UPDATE_DATA,{
+              action: 'update',
+              section: 'updateTask',
+              data: data
+          });
+          if (response.data.response === true) {
+              context.commit('UPDATE_TASK_STATUS',data);
+          }
+      },
+      async storeTask(context, data: Task):Promise<void> {
+          try {
+              let response = await Vue.axios.post(UrlMaster.URL_STORE_DATA,{
+                  action: 'store',
+                  section: 'storeTask',
+                  data: data
+              });
+              let responseData = response.data.response;
+              if (responseData !== null) {
+                  let object = new Task();
+                  object.id = Number(responseData.id);
+                  object.name = responseData.name;
+                  object.description = responseData.description;
+                  object.status = responseData.status;
+                  object.assignedUser = responseData.assigned_user;
+                  object.assignedByUser = responseData.assigned_by;
+                  object.impact = responseData.impact;
+                  object.category = responseData.category;
+                  object.priority = responseData.priority;
+                  object.comments = responseData.comments;
+                  object.timeToSolve = responseData.time_to_solve;
+                  object.created_at = responseData.created_at;
+                  object.update_at = responseData.update_at;
+                  object.deleted_at = responseData.deleted_at;
+                  context.commit('ADD_TASK',object);
+              }
+          }catch (e) {
 
+          }
+      },
         async storeStatus(context, data: Status):Promise<void> {
           try {
               let response = await Vue.axios.post(UrlMaster.URL_STORE_DATA,{
@@ -402,6 +522,8 @@ export default new Vuex.Store({
                   object.id = Number(responseData.id);
                   object.name = responseData.name;
                   object.description = responseData.description;
+                  object.override = Number(responseData.override);
+                  object.color = responseData.color;
                   context.commit('ADD_STATUS',object);
               }
           }catch (e) {
@@ -422,6 +544,8 @@ export default new Vuex.Store({
               obj.id = Number(object.id);
               obj.name = object.name;
               obj.description = object.description;
+              obj.override = Number(object.override);
+              obj.color = object.color;
               objects.push(obj);
           }
           context.commit('SET_STATUSES',objects);
@@ -446,11 +570,11 @@ export default new Vuex.Store({
               context.commit('REMOVE_STATUS',data.id);
           }
         },
-        async retrieveTasks(context): Promise<void> {
+        async retrieveTasks(context, filters: FilterTastk): Promise<void> {
             let response = await Vue.axios.post(UrlMaster.URL_RETRIEVE_DATA,{
                 action: 'retrieve',
                 section: 'retrieveTasks',
-                data: null
+                data: filters
             });
             let objects = [];
             let responseData = response.data.response;
@@ -475,7 +599,103 @@ export default new Vuex.Store({
                 objects.push(obj);
             }
             context.commit('SET_TASKS',objects);
-        }
+        },
+        async retrieveUsers(context): Promise<void> {
+          let response = await Vue.axios.post(UrlMaster.URL_RETRIEVE_DATA,{
+              action: 'retrieve',
+              section: 'retrieveUsers',
+              data: null
+          });
+          let objects = [];
+          let responseData = response.data.response;
+          for (let i = 0; i < responseData.length; i++) {
+              let object = responseData[i];
+              let obj = new User();
+              obj.id = Number(object.id);
+              obj.userName = object.name;
+              obj.name = object.name;
+              obj.lastName = object.last_name;
+              obj.email = object.email;
+
+              objects.push(obj);
+          }
+          context.commit('SET_USERS',objects);
+        },
+        async deleteTask(context, data: Task): Promise<void> {
+          let response = await Vue.axios.post(UrlMaster.URL_DELETE_DATA,{
+              action: 'delete',
+              section: 'deleteTask',
+              data: data
+          });
+          if (response.data.response === true) {
+              context.commit('REMOVE_TASK',data.id);
+          }
+        },
+      async retrieveConfigurations(context): Promise<void> {
+          let response = await Vue.axios.post(UrlMaster.URL_SYSTEM_CONFIGURATION,{
+              action: 'retrieve',
+              section: 'retrieveConfigurations',
+              data: null
+          });
+          let objects = [];
+          let responseData = response.data.response;
+          for (let i = 0; i < responseData.length; i++) {
+              let object = responseData[i];
+              let obj = new Configuration();
+              obj.id = Number(object.id);
+              obj.key = object.key;
+              obj.value = object.value;
+              objects.push(obj);
+          }
+          context.commit('SET_CONFIGURATIONS',objects);
+      },
+      async storeConfiguration(context, data: Configuration) {
+            try {
+                let response = await Vue.axios.post(UrlMaster.URL_SYSTEM_CONFIGURATION,{
+                    action: 'store',
+                    section: 'storeValue',
+                    data: data
+                });
+                let responseData = response.data.response;
+                if (responseData !== null) {
+                    let object = new Configuration();
+                    object.id = Number(responseData.id);
+                    object.key = responseData.key;
+                    object.value = responseData.value;
+                    context.commit('ADD_CONFIGURATION',object);
+                }
+            } catch (e) {
+            }
+      },
+      async updateConfiguration(context, data: Configuration): Promise<void> {
+          let response = await Vue.axios.post(UrlMaster.URL_SYSTEM_CONFIGURATION,{
+              action: 'update',
+              section: 'updateValue',
+              data: data
+          });
+          if (response.data.response === true) {
+              context.commit('UPDATE_CONFIGURATION',data);
+          }
+      }
     },
+    getters : {
+      getStatuses: (state)=> {
+          return state.statuses.filter(value => true);
+      },
+        getPriorities: (state)=> {
+            return state.priorities.filter(value => true);
+        },
+        getImpacts: (state)=> {
+            return state.impacts.filter(value => true);
+        },
+        getCategories: (state)=> {
+            return state.categories.filter(value => true);
+        },
+        getConfigurationsByKey: (state) => async (key: string)=> {
+          return await state.configurations.filter((value: Configuration) => {
+             return value.key.trim() === key.trim();
+          });
+        }
+    }
 });
 

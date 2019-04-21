@@ -25,7 +25,7 @@
 
 <script lang="ts">
     import { Component, Prop, Vue } from 'vue-property-decorator';
-    import UserLogin from "../../objects/UserLogin";
+    import UserLogin from "../../objects/types/UserLogin";
 
     @Component
     export default class Login extends Vue {

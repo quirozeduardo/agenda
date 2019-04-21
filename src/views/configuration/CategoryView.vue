@@ -5,7 +5,7 @@
                 Categories
                 <v-spacer></v-spacer>
                 <v-text-field v-model="search" append-icon="fa-search" label="Search" single-line hide-details></v-text-field>
-                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Task</v-btn>
+                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Category</v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="this.$store.state.categories" :search="search">
                 <template v-slot:items="props">
@@ -25,7 +25,7 @@
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">User Profile</span>
+                    <span class="headline">Category</span>
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>

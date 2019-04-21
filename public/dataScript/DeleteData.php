@@ -14,6 +14,9 @@ switch ($section) {
     case 'deleteStatus':
         $response = deleteStatus($mysql, $dataUsage->_id);
         break;
+    case 'deleteTask':
+        $response = deleteTask($mysql, $dataUsage->_id);
+        break;
 }
 echoResponse();
 function deleteCategory(MySQLConnection $mysql, $id) {
@@ -45,6 +48,15 @@ function deletePriority(MySQLConnection $mysql, $id) {
 }
 function deleteStatus(MySQLConnection $mysql, $id) {
     $query = "DELETE FROM status WHERE id = $id";
+    try {
+        $mysql->query($query);
+        return true;
+    }catch (Exception $e) {
+        return false;
+    }
+}
+function deleteTask(MySQLConnection $mysql, $id) {
+    $query = "UPDATE task SET deleted_at=now() WHERE id = $id";
     try {
         $mysql->query($query);
         return true;

@@ -1,4 +1,4 @@
-export default class TaskObject {
+export default class Task {
     private _id: number = 0;
     private _name: string = '';
     private _description: string = '';

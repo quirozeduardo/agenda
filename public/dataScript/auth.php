@@ -5,7 +5,7 @@ $api_key = '91y83ux12317203471c2';
 $dataUsage = $data->data;
 switch ($section) {
     case 'login':
-        $response = generateRememberTokenIfUserVerified($mysql, $dataUsage->email, $dataUsage->password);
+        $response = login($mysql, $dataUsage->email, $dataUsage->password);
         break;
     case 'logout':
         $response = deleteRememberToken($mysql, $dataUsage->email);
@@ -21,24 +21,36 @@ switch ($section) {
         break;
 }
 echoResponse();
+function login(MySQLConnection $mysql, $email, $password) {
+    $token = generateRememberTokenIfUserVerified($mysql, $email, $password);
+    if ($token != null) {
+        $user =  getUserById($mysql, userExist($mysql, $email));
+        return [
+            "token" => $token,
+            "user" => $user,
+        ];
+    } else {
+        return null;
+    }
+}
 function verifyRememberToken(MySQLConnection $mysql, $email, $token) {
-    $match = false;
+    $response = null;
     try {
         $idUser = userExist($mysql, $email);
         if ($idUser > 0) {
-            $query = "SELECT remember_token FROM users WHERE id=$idUser";
+            $query = "SELECT id, remember_token FROM users WHERE id=$idUser";
             $result = $mysql->query($query);
             $record = $result->fetch_row();
-            $remember_token = strval($record[0]);
+            $remember_token = strval($record[1]);
             if (trim($remember_token) === trim($token)) {
-                $match = true;
+                $response = getUserById($mysql, $record[0]);
             }
         }
 
     } catch (Exception $e) {
 
     }
-    return $match;
+    return $response;
 }
 function generateRememberTokenIfUserVerified(MySQLConnection $mysql, $email, $password) {
     global $api_key;
@@ -146,4 +158,27 @@ function registerNewUser(MySQLConnection $mysql,$name,$lastName,$userName,$email
     }catch (Exception $e) {
         return 'fail';
     }
+}
+function getUserById(MySQLConnection $mysql, $id) {
+    $query = "SELECT * FROM users WHERE id=$id";
+    $object = null;
+    try {
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $object = [
+                'id' => $record[0],
+                'username' => $record[1],
+                'name' => $record[2],
+                'last_name' => $record[3],
+                'email' => $record[4],
+                'created_at' => $record[7],
+                'updated_at' => $record[8],
+                'deleted_at' => $record[9],
+            ];
+        }
+
+    }catch (Exception $e) {
+    }
+    return $object;
 }

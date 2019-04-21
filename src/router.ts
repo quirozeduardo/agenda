@@ -58,21 +58,33 @@ const router = new Router({
           path: 'category',
           name: 'category',
           component: Category,
+          meta: {
+            requiresAuth: true
+          },
         },
         {
           path: 'impact',
           name: 'impact',
           component: Impact,
+          meta: {
+            requiresAuth: true
+          },
         },
         {
           path: 'priority',
           name: 'priority',
           component: Priority,
+          meta: {
+            requiresAuth: true
+          },
         },
         {
           path: 'status',
           name: 'status',
           component: Status,
+          meta: {
+            requiresAuth: true
+          },
         }
       ]
     },

@@ -5,7 +5,7 @@
                 Statuses
                 <v-spacer></v-spacer>
                 <v-text-field v-model="search" append-icon="fa-search" label="Search" single-line hide-details></v-text-field>
-                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Task</v-btn>
+                <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Status</v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="this.$store.state.statuses" :search="search">
                 <template v-slot:items="props">
@@ -25,13 +25,19 @@
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">User Profile</span>
+                    <span class="headline">Status</span>
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
                         <v-layout wrap>
                             <v-flex xs12>
                                 <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field label="Override*" v-model="overrideInsert" required></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field label="Color" v-model="colorInsert" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field label="Description" v-model="descriptionInsert"></v-text-field>
@@ -84,6 +90,8 @@
 
         private nameInsert: string = '';
         private descriptionInsert: string = '';
+        private overrideInsert: number = 0;
+        private colorInsert: string = '';
         private headers = [
             { text: 'Name', value: 'name', align: 'center' },
             { text: 'Description', value: 'description', align: 'center' },
@@ -107,10 +115,14 @@
             if (item === null) {
                 this.nameInsert = '';
                 this.descriptionInsert = '';
+                this.colorInsert = '';
+                this.overrideInsert = 0;
                 this.update = false;
             }else {
                 this.nameInsert = item.name;
                 this.descriptionInsert = item.description;
+                this.colorInsert = item.color;
+                this.overrideInsert = item.override;
                 this.update = true;
             }
         }
@@ -122,6 +134,8 @@
             let item = new Status();
             item.name = this.nameInsert;
             item.description = this.descriptionInsert;
+            item.color = this.colorInsert;
+            item.override = Number(this.overrideInsert);
             this.$store.dispatch('storeStatus',item);
         }
         private updateItem(item: Status): void {
@@ -129,6 +143,8 @@
             itemUpdate.id = this.item.id;
             itemUpdate.name = this.nameInsert;
             itemUpdate.description = this.descriptionInsert;
+            itemUpdate.color = this.colorInsert;
+            itemUpdate.override = Number(this.overrideInsert);
             this.$store.dispatch('updateStatus',itemUpdate);
         }
         private deleteItem(item: Status): void {

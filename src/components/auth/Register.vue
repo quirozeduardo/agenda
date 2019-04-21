@@ -29,7 +29,7 @@
 
 <script lang="ts">
     import { Component, Prop, Vue } from 'vue-property-decorator';
-    import UserRegister from "../../objects/UserRegister";
+    import UserRegister from "../../objects/types/UserRegister";
 
     @Component
     export default class Register extends Vue {

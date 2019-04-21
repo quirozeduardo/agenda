@@ -1,7 +1,9 @@
-export default class CategoryObject {
+export default class Status {
     private _id: number = 0;
     private _name: string = '';
     private _description: string = '';
+    private _color: string = '';
+    private _override: number = 0;
 
     get id(): number {
         return this._id;
@@ -25,5 +27,21 @@ export default class CategoryObject {
 
     set description(value: string) {
         this._description = value;
+    }
+
+    get color(): string {
+        return this._color;
+    }
+
+    set color(value: string) {
+        this._color = value;
+    }
+
+    get override(): number {
+        return this._override;
+    }
+
+    set override(value: number) {
+        this._override = value;
     }
 }

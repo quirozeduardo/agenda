@@ -15,7 +15,10 @@ switch ($section) {
         $response = retrieveStatuses($mysql);
         break;
     case 'retrieveTasks':
-        $response = retrieveTasks($mysql);
+        $response = retrieveTasks($mysql, $dataUsage->filterStatus, $dataUsage->filterPriority, $dataUsage->filterImpact, $dataUsage->filterCategory);
+        break;
+    case 'retrieveUsers':
+        $response = retrieveUsers($mysql);
         break;
 }
 echoResponse();
@@ -46,7 +49,9 @@ function retrieveImpacts(MySQLConnection $mysql) {
             $object = [
                 'id' => $line[0],
                 'name' => $line[1],
-                'description' => $line[2]
+                'description' => $line[2],
+                'importance' => $line[3],
+                'color' => $line[4],
             ];
             array_push($objects, $object);
         }
@@ -64,7 +69,9 @@ function retrievePriorities(MySQLConnection $mysql) {
             $object = [
                 'id' => $line[0],
                 'name' => $line[1],
-                'description' => $line[2]
+                'description' => $line[2],
+                'importance' => $line[3],
+                'color' => $line[4],
             ];
             array_push($objects, $object);
         }
@@ -82,7 +89,9 @@ function retrieveStatuses(MySQLConnection $mysql) {
             $object = [
                 'id' => $line[0],
                 'name' => $line[1],
-                'description' => $line[2]
+                'description' => $line[2],
+                'color' => $line[3],
+                'override' => $line[4],
             ];
             array_push($objects, $object);
         }
@@ -91,7 +100,7 @@ function retrieveStatuses(MySQLConnection $mysql) {
     }
     return $objects;
 }
-function retrieveTasks(MySQLConnection $mysql) {
+function retrieveTasks(MySQLConnection $mysql, $filterStatus, $filterPriority, $filterImpact, $filterCategory) {
     $query = "SELECT 
         t.id AS id, 
         t.name AS name, 
@@ -114,7 +123,11 @@ function retrieveTasks(MySQLConnection $mysql) {
         INNER JOIN impact i ON i.id = t.impact_id 
         INNER JOIN category c ON c.id = t.category_id 
         INNER JOIN priority p ON p.id = t.priority_id 
-        WHERE t.deleted_at IS NULL";
+        WHERE t.deleted_at IS NULL
+        AND t.status_id ".((intval($filterStatus)==-1)?'!=':'=')." $filterStatus
+        AND t.priority_id ".((intval($filterPriority)==-1)?'!=':'=')." $filterPriority
+        AND t.impact_id ".((intval($filterImpact)==-1)?'!=':'=')." $filterImpact
+        AND t.category_id ".((intval($filterCategory)==-1)?'!=':'=')." $filterCategory";
     $objects = [];
     try {
         $result = $mysql->query($query);
@@ -134,6 +147,28 @@ function retrieveTasks(MySQLConnection $mysql) {
                 'created_at' => $line[11],
                 'update_at' => $line[12],
                 'deleted_at' => $line[12],
+            ];
+            array_push($objects, $object);
+        }
+
+    }catch (Exception $e) {
+        var_dump($e->getMessage());
+    }
+    return $objects;
+}
+function retrieveUsers(MySQLConnection $mysql) {
+    $query = "SELECT * FROM users";
+    $objects = [];
+    try {
+        $result = $mysql->query($query);
+        while ($line = $result->fetch_row()) {
+            $object = [
+                'id' => $line[0],
+                'username' => $line[1],
+                'name' => $line[2],
+                'last_name' => $line[3],
+                'email' => $line[4],
+
             ];
             array_push($objects, $object);
         }

@@ -4,11 +4,11 @@
 
 <script lang="ts">
     import { Component, Prop, Vue } from 'vue-property-decorator';
-    import TaskObject from "../objects/types/Task";
+    import Task from "../objects/types/Task";
 
     @Component
     export default class TaskList extends Vue {
-        @Prop() private tasks!: TaskObject;
+        @Prop() private tasks!: Task;
     }
 </script>
 
