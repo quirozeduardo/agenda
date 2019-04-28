@@ -18,7 +18,7 @@ switch ($section) {
         $response = updatePriority($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_description, $dataUsage->_importance, $dataUsage->_color);
         break;
     case 'updateStatus':
-        $response = updateStatus($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_description, $dataUsage->_importance, $dataUsage->_color);
+        $response = updateStatus($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_description, $dataUsage->_override, $dataUsage->_color);
         break;
     case 'updateTask':
         $response = updateTask($mysql,

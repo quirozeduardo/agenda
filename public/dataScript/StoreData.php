@@ -147,8 +147,8 @@ function storeTask(MySQLConnection $mysql,
             $assignedByUser,
             $impact,
             $category,
-            $department,
             $priority,
+            $department,
             $comments) {
     $query = "INSERT INTO 
             task(name, description, status_id, assigned_user_id, assigned_by_user_id, impact_id, category_id, priority_id, department_id, comments, time_to_solve, created_at, updated_at) 
