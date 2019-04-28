@@ -4,7 +4,8 @@ require '../Export/PhpExcelHelperFormat.php';
 $mysql = new MySQLConnection();
 ob_get_clean();
 $section = $_GET['export'];
-$dataUsage = json_decode($_GET['filters']);
+$filters = $_GET['filters'];
+$dataUsage = json_decode(substr($filters,1, -1));
 switch ($section) {
     case 'exportTasks':
         $response = retrieveTasks($mysql, $dataUsage->filterStatus, $dataUsage->filterPriority, $dataUsage->filterImpact, $dataUsage->filterCategory, $dataUsage->filterDepartment, $dataUsage->user);
