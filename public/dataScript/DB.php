@@ -20,12 +20,24 @@ class MySQLConnection {
         $this->isConnected=true;
         $this->tryConnectDatabase();
     }
-    public function tryConnectDatabase() {
+    public function tryConnectDatabase($try=false) {
         try {
-            $this->connection->select_db($this->database);
-            $this->isConnectedDataBase = true;
+            if($this->connection->select_db($this->database)) {
+                $this->isConnectedDataBase = true;
+            } else {
+                $this->isConnectedDataBase = false;
+                if ($try == false) {
+                    $this->createDataBaseIfNotExist();
+                    $this->tryConnectDatabase(true);
+                    $this->createTablesIfNotExist();
+                }
+            }
         }catch (Exception $e) {
             $this->isConnectedDataBase = false;
+            if ($try == false) {
+                $this->createDataBaseIfNotExist();
+                $this->tryConnectDatabase(true);
+            }
         }
     }
     public function createDataBaseIfNotExist() {
@@ -38,12 +50,15 @@ class MySQLConnection {
                     return false;
                 }
             }catch(Exception $e) {
+                var_dump($e->getMessage());
                 return false;
             }
         }
         return false;
     }
-    public function createSchema () {
+    public function createTablesIfNotExist() {
+        $commands = file_get_contents('commandsSql.sql');
+        $this->connection->multi_query($commands);
 
     }
     public function query($query) {

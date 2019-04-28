@@ -17,6 +17,15 @@ switch ($section) {
     case 'deleteTask':
         $response = deleteTask($mysql, $dataUsage->_id);
         break;
+    case 'deleteUser':
+        $response = deleteUser($mysql, $dataUsage->_id);
+        break;
+    case 'deleteUserType':
+        $response = deleteUserType($mysql, $dataUsage->_id);
+        break;
+    case 'deleteDepartment':
+        $response = deleteDepartment($mysql, $dataUsage->_id);
+        break;
 }
 echoResponse();
 function deleteCategory(MySQLConnection $mysql, $id) {
@@ -64,3 +73,32 @@ function deleteTask(MySQLConnection $mysql, $id) {
         return false;
     }
 }
+function deleteUser(MySQLConnection $mysql, $id) {
+    $query = "UPDATE users SET deleted_at=now() WHERE id = $id";
+    try {
+        $mysql->query($query);
+        return true;
+    }catch (Exception $e) {
+        return false;
+    }
+}
+function deleteUserType(MySQLConnection $mysql, $id) {
+    $query = "DELETE FROM user_types WHERE id = $id";
+    try {
+        $mysql->query($query);
+        return true;
+    }catch (Exception $e) {
+        return false;
+    }
+}
+
+function deleteDepartment(MySQLConnection $mysql, $id) {
+    $query = "DELETE FROM department WHERE id = $id";
+    try {
+        $mysql->query($query);
+        return true;
+    }catch (Exception $e) {
+        return false;
+    }
+}
+

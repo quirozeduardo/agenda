@@ -6,7 +6,7 @@ export default class User {
     private _email: string = '';
     private _created_at: string = '';
     private _updated_at: string = '';
-    private _deleted_at: string = '';
+    private _deleted_at: string|null = '';
 
     get id(): number {
         return this._id;
@@ -64,11 +64,11 @@ export default class User {
         this._updated_at = value;
     }
 
-    get deleted_at(): string {
+    get deleted_at(): string | null {
         return this._deleted_at;
     }
 
-    set deleted_at(value: string) {
+    set deleted_at(value: string | null) {
         this._deleted_at = value;
     }
 }

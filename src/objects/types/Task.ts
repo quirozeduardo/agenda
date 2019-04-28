@@ -1,19 +1,43 @@
+import Impact from "./Impact";
+import Status from "./Status";
+import Category from "./Category";
+import Priority from "./Priority";
+import {Department} from "./admin/Department";
+import User from "./User";
+
 export default class Task {
     private _id: number = 0;
     private _name: string = '';
     private _description: string = '';
-    private _status: string = '';
-    private _assignedUser: string = '';
-    private _assignedByUser: string = '';
-    private _impact: string = '';
-    private _category: string = '';
-    private _priority: string = '';
+    private _status: Status|null = null;
+    private _assignedUser: User|null = null;
+    private _assignedByUser: User|null = null;
+    private _impact: Impact|null = null;
+    private _category: Category|null = null;
+    private _priority: Priority|null = null;
+    private _department: Department|null = null;
     private _comments: string = '';
     private _timeToSolve: string = '';
     private _created_at: string = '';
     private _update_at: string = '';
     private _deleted_at: string = '';
 
+
+    get status(): Status | null {
+        return this._status;
+    }
+
+    set status(value: Status | null) {
+        this._status = value;
+    }
+
+    get category(): Category | null {
+        return this._category;
+    }
+
+    set category(value: Category | null) {
+        this._category = value;
+    }
 
     get id(): number {
         return this._id;
@@ -39,53 +63,6 @@ export default class Task {
         this._description = value;
     }
 
-    get status(): string {
-        return this._status;
-    }
-
-    set status(value: string) {
-        this._status = value;
-    }
-
-    get assignedUser(): string {
-        return this._assignedUser;
-    }
-
-    set assignedUser(value: string) {
-        this._assignedUser = value;
-    }
-
-    get assignedByUser(): string {
-        return this._assignedByUser;
-    }
-
-    set assignedByUser(value: string) {
-        this._assignedByUser = value;
-    }
-
-    get impact(): string {
-        return this._impact;
-    }
-
-    set impact(value: string) {
-        this._impact = value;
-    }
-
-    get category(): string {
-        return this._category;
-    }
-
-    set category(value: string) {
-        this._category = value;
-    }
-
-    get priority(): string {
-        return this._priority;
-    }
-
-    set priority(value: string) {
-        this._priority = value;
-    }
 
     get comments(): string {
         return this._comments;
@@ -125,5 +102,45 @@ export default class Task {
 
     set deleted_at(value: string) {
         this._deleted_at = value;
+    }
+
+    get assignedUser(): User | null {
+        return this._assignedUser;
+    }
+
+    set assignedUser(value: User | null) {
+        this._assignedUser = value;
+    }
+
+    get assignedByUser(): User | null {
+        return this._assignedByUser;
+    }
+
+    set assignedByUser(value: User | null) {
+        this._assignedByUser = value;
+    }
+
+    get impact(): Impact | null {
+        return this._impact;
+    }
+
+    set impact(value: Impact | null) {
+        this._impact = value;
+    }
+
+    get priority(): Priority | null {
+        return this._priority;
+    }
+
+    set priority(value: Priority | null) {
+        this._priority = value;
+    }
+
+    get department(): Department | null {
+        return this._department;
+    }
+
+    set department(value: Department | null) {
+        this._department = value;
     }
 }

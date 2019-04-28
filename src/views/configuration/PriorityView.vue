@@ -34,7 +34,7 @@
                                 <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
-                                <v-text-field label="Importance*" v-model="importanceInsert" required></v-text-field>
+                                <v-slider v-model="importanceInsert" :label="String(importanceInsert)" thumb-label="always" :thumb-color="'primary'" :max="100" :min="1"></v-slider>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field label="Color" v-model="colorInsert" required></v-text-field>
@@ -90,7 +90,7 @@
 
         private nameInsert: string = '';
         private descriptionInsert: string = '';
-        private importanceInsert: number = 1;
+        private importanceInsert: string = '1';
         private colorInsert: string = '';
         private headers = [
             { text: 'Name', value: 'name', align: 'center' },
@@ -116,13 +116,13 @@
                 this.nameInsert = '';
                 this.descriptionInsert = '';
                 this.colorInsert = '';
-                this.importanceInsert = 1;
+                this.importanceInsert = '1';
                 this.update = false;
             }else {
                 this.nameInsert = item.name;
                 this.descriptionInsert = item.description;
                 this.colorInsert = item.color;
-                this.importanceInsert = item.importance;
+                this.importanceInsert = String(item.importance);
                 this.update = true;
             }
         }

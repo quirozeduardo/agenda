@@ -193,3 +193,106 @@ CREATE TABLE IF NOT EXISTS `system_configuration` (
     `created_at` DATETIME NULL,
     `updated_at` DATETIME NULL,
     PRIMARY KEY (`id`));
+
+CREATE TABLE IF NOT EXISTS `departament` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(256) NOT NULL,
+  `description` VARCHAR(512) NULL,
+  `created_at` DATETIME NULL,
+  `updated_at` DATETIME NULL,
+  PRIMARY KEY (`id`));
+
+CREATE TABLE IF NOT EXISTS `user_departaments` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `departament_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_user_departament_user_id_users_idx` (`user_id`),
+  INDEX `fk_user_departament_departament_id_departament_idx` (`departament_id`),
+  CONSTRAINT `fk_user_departament_user_id_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `agenda`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_departament_departament_id_departament`
+    FOREIGN KEY (`departament_id`)
+    REFERENCES `agenda`.`departament` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+    CREATE TABLE IF NOT EXISTS `agenda`.`user_types` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(256) NOT NULL,
+  `description` VARCHAR(512) NULL,
+  `created_at` DATETIME NULL,
+  `updated_at` DATETIME NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `agenda`.`user_type`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `agenda`.`user_type` ;
+
+CREATE TABLE IF NOT EXISTS `agenda`.`user_type` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `type_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_user_type_user_id_users_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_user_type_type_id_user_types_idx` (`type_id` ASC) VISIBLE,
+  CONSTRAINT `fk_user_type_user_id_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `agenda`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_type_type_id_user_types`
+    FOREIGN KEY (`type_id`)
+    REFERENCES `agenda`.`user_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+CREATE TABLE IF NOT EXISTS `user_types` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(256) NOT NULL,
+  `description` VARCHAR(512) NULL,
+  `created_at` DATETIME NULL,
+  `updated_at` DATETIME NULL,
+  PRIMARY KEY (`id`))
+
+
+CREATE TABLE IF NOT EXISTS `agenda`.`user_type` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `type_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_user_type_user_id_users_idx` (`user_id`),
+  INDEX `fk_user_type_type_id_user_types_idx` (`type_id`),
+  CONSTRAINT `fk_user_type_user_id_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `agenda`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_type_type_id_user_types`
+    FOREIGN KEY (`type_id`)
+    REFERENCES `agenda`.`user_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+CREATE TABLE IF NOT EXISTS `task_departament` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `task_id` INT UNSIGNED NOT NULL,
+  `departament_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_task_departament_task_id_departaments_idx` (`departament_id`),
+  INDEX `fk_task_departament_task_id_task_idx` (`task_id`),
+  CONSTRAINT `fk_task_departament_departament_id_departament`
+    FOREIGN KEY (`departament_id`)
+    REFERENCES `agenda`.`departament` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_task_departament_task_id_task`
+    FOREIGN KEY (`task_id`)
+    REFERENCES `agenda`.`task` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)

@@ -21,6 +21,45 @@ switch ($section) {
         break;
 }
 echoResponse();
+
+function retrieveDepartmentsByUserId(MySQLConnection $mysql, $id) {
+    $query = "SELECT d.* FROM department d INNER JOIN user_departments ud ON d.id = ud.department_id WHERE ud.user_id = $id";
+    $objects = [];
+    try {
+        $result = $mysql->query($query);
+        while ($line = $result->fetch_row()) {
+            $object = [
+                'id' => $line[0],
+                'name' => $line[1],
+                'description' => $line[2],
+
+            ];
+            array_push($objects, $object);
+        }
+
+    }catch (Exception $e) {
+    }
+    return $objects;
+}
+function retrieveUserTypesByUserId(MySQLConnection $mysql, $id) {
+    $query = "SELECT uts.* FROM user_types uts INNER JOIN user_type ut ON uts.id = ut.type_id WHERE ut.user_id = $id";
+    $objects = [];
+    try {
+        $result = $mysql->query($query);
+        while ($line = $result->fetch_row()) {
+            $object = [
+                'id' => $line[0],
+                'name' => $line[1],
+                'description' => $line[2],
+
+            ];
+            array_push($objects, $object);
+        }
+
+    }catch (Exception $e) {
+    }
+    return $objects;
+}
 function login(MySQLConnection $mysql, $email, $password) {
     $token = generateRememberTokenIfUserVerified($mysql, $email, $password);
     if ($token != null) {
@@ -172,6 +211,8 @@ function getUserById(MySQLConnection $mysql, $id) {
                 'name' => $record[2],
                 'last_name' => $record[3],
                 'email' => $record[4],
+                'departments' => retrieveDepartmentsByUserId($mysql, $record[0]),
+                'userTypes' => retrieveUserTypesByUserId($mysql, $record[0]),
                 'created_at' => $record[7],
                 'updated_at' => $record[8],
                 'deleted_at' => $record[9],

@@ -8,6 +8,8 @@
             <v-btn to="/configuration/status">Status</v-btn>
             <v-btn to="/configuration/priority">Priority</v-btn>
             <v-btn to="/configuration/impact">Impact</v-btn>
+            <v-btn to="/configuration/userType">User Type</v-btn>
+            <v-btn to="/configuration/department">Department</v-btn>
             <v-btn to="/configuration/category">Category</v-btn>
         </v-layout>
         <router-view/>

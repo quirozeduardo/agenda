@@ -9,8 +9,8 @@ module.exports = {
         './src/assets/sass/styles.scss',
     ],
     output: {
-        path: path.resolve(__dirname, './dist/js/'),
-        publicPath: '/dist/js/',
+        path: path.resolve(__dirname, './public/js/'),
+        publicPath: '/public/js/',
         filename: 'app.js'
     },
     module: {
@@ -33,6 +33,16 @@ module.exports = {
                     MiniCssExtractPlugin.loader,
                     'css-loader',
                     'sass-loader'
+                ]
+            },
+            {
+                test: /\.(png|svg|jpg|jpeg|gif)$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        outputPath: '../images',
+                    },
+                }
                 ]
             }
         ]

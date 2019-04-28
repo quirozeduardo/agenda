@@ -8,7 +8,10 @@ import Impact from "./views/configuration/ImpactView.vue";
 import Category from "./views/configuration/CategoryView.vue";
 import Priority from "./views/configuration/PriorityView.vue";
 import Status from "./views/configuration/StatusView.vue";
-import HomeView from "./views/HomeView.vue";
+import TasksView from "./views/TasksView.vue";
+import Users from "./views/UsersView.vue";
+import UserTypesView from "./views/configuration/UserTypesView.vue";
+import DepartmentView from "./views/configuration/DepartmentView.vue";
 
 Vue.use(Router);
 
@@ -27,7 +30,15 @@ const router = new Router({
     {
       path: '/home',
       name: 'home',
-      component: HomeView,
+      component: TasksView,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/tasks/department/:id',
+      name: 'tasks.department',
+      component: TasksView,
       meta: {
         requiresAuth: true
       }
@@ -47,11 +58,21 @@ const router = new Router({
       name: 'logout'
     },
     {
+      path: '/users',
+      name: 'users',
+      component: Users,
+      meta: {
+        requiresAuth: true,
+          requiresAuthAdmin: true
+      }
+    },
+    {
       path: '/configuration',
       name: 'configuration',
       component: Configuration,
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+          requiresAuthAdmin: true
       },
       children: [
         {
@@ -59,7 +80,26 @@ const router = new Router({
           name: 'category',
           component: Category,
           meta: {
-            requiresAuth: true
+            requiresAuth: true,
+              requiresAuthAdmin: true
+          },
+        },
+        {
+          path: 'userType',
+          name: 'userType',
+          component: UserTypesView,
+          meta: {
+            requiresAuth: true,
+              requiresAuthAdmin: true
+          },
+        },
+        {
+          path: 'department',
+          name: 'department',
+          component: DepartmentView,
+          meta: {
+            requiresAuth: true,
+              requiresAuthAdmin: true
           },
         },
         {
@@ -67,7 +107,8 @@ const router = new Router({
           name: 'impact',
           component: Impact,
           meta: {
-            requiresAuth: true
+            requiresAuth: true,
+              requiresAuthAdmin: true
           },
         },
         {
@@ -75,7 +116,8 @@ const router = new Router({
           name: 'priority',
           component: Priority,
           meta: {
-            requiresAuth: true
+            requiresAuth: true,
+              requiresAuthAdmin: true
           },
         },
         {
@@ -83,7 +125,8 @@ const router = new Router({
           name: 'status',
           component: Status,
           meta: {
-            requiresAuth: true
+            requiresAuth: true,
+              requiresAuthAdmin: true
           },
         }
       ]
@@ -92,10 +135,32 @@ const router = new Router({
 
 });
 router.beforeEach(async (to, from, next) => {
-  console.log(to);
   await store.dispatch('loggedIn');
   let logged = store.state.logged;
-  if (to.meta.requiresAuth === true) {
+    if (to.meta.requiresAuthAdmin === true) {
+        function isAdmin() {
+            let loggedUser = store.state.loggedUser;
+            if (loggedUser !== null) {
+                if (loggedUser.userTypes !== null) {
+                    if (loggedUser.userTypes.length > 0) {
+                        for (let i = 0; i < loggedUser.userTypes.length; i++) {
+                            let ut = loggedUser.userTypes[i];
+                            if (Number(ut.id)===1) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        if (isAdmin()=== true) {
+            next();
+        }else {
+            next('/home');
+        }
+    }
+    else if (to.meta.requiresAuth === true) {
     // this route requires auth, check if logged in
     // if not, redirect to login page.
     if (!logged) {
@@ -119,4 +184,5 @@ router.beforeEach(async (to, from, next) => {
     next(); // make sure to always call next()!
   }
 });
+
 export default router;

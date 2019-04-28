@@ -9,6 +9,7 @@
             </v-select>
             <v-select class="ma-2" :items="categoryOptions" :value="-1" v-on:change="changedFilters" v-model="filterCategoryModel" item-text="name" item-value="id" label="Category">
             </v-select>
+            <v-btn color="success" @click="exportToExcel()" >Excel</v-btn>
         </v-flex>
         <v-flex>
             <v-toolbar flat color="white">
@@ -18,22 +19,29 @@
             </v-toolbar>
             <v-data-table :headers="headers" :items="this.$store.state.tasks" item-key="name">
                 <template v-slot:items="props">
-                    <tr @click="props.expanded = !props.expanded" bgcolor="#B2EBF2">
+                    <tr @click="props.expanded = !props.expanded" :bgcolor="(Number(props.item.status.override )=== 1)?('#'+props.item.status.color):((Number(props.item.priority.importance)>=Number(props.item.impact.importance))?('#'+props.item.priority.color):('#'+props.item.impact.color))">
                         <td class="text-xs-center">{{ props.item.id }}</td>
                         <td class="text-xs-center">{{ props.item.name }}</td>
-                        <td class="text-xs-center">{{ props.item.status }}</td>
-                        <td class="text-xs-center">{{ props.item.impact }}</td>
-                        <td class="text-xs-center">{{ props.item.priority }}</td>
+                        <td class="text-xs-center">{{ props.item.description }}</td>
+                        <td class="text-xs-center">{{ props.item.status.name }}</td>
+                        <td class="text-xs-center">{{ props.item.impact.name }}</td>
+                        <td class="text-xs-center">{{ props.item.priority.name }}</td>
                         <td class="justify-center layout px-0">
                             <v-icon small class="mr-2" @click="editItem(props.item)">
                                 fa-edit
                             </v-icon>
-                            <v-icon small class="mr-2" @click="openDialogDeleteItem(props.item)" color="red">
+                            <v-icon small class="mr-2" @click="openDialogDeleteItem(props.item)">
                                 fa-trash
                             </v-icon>
-                            <v-icon small @click="quickResolve(props.item)" color="green">
-                                far fa-check-circle
-                            </v-icon>
+                            <v-tooltip top v-if="quickResolveShow">
+                              <template v-slot:activator="{ on }">
+                                <v-icon small @click="quickResolve(props.item)" v-on="on" color="green">
+                                    far fa-check-circle
+                                </v-icon>
+                              </template>
+                              <span>Change status to {{quickResolveText}}</span>
+                            </v-tooltip>
+                            
                         </td>
                     </tr>
                 </template>
@@ -76,6 +84,10 @@
                             </v-flex>
                             <v-flex xs12>
                                 <v-select v-model="categoryModel" :items="this.$store.state.categories" item-text="name" item-value="id" label="Category*">
+                                </v-select>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-select v-model="departmentModel" :items="routesDepartments()" item-text="name" item-value="id" label="Department*">
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
@@ -127,7 +139,7 @@
     import User from "../objects/types/User";
     import Task from "../objects/types/Task";
     @Component
-    export default class HomeView extends Vue {
+    export default class TasksView extends Vue {
         private statusOptions: Status[] = [];
         private priorityOptions: Priority[] = [];
         private impactOptions: Impact[] = [];
@@ -150,20 +162,40 @@
         private priorityModel: number = 0;
         private impactModel: number = 0;
         private categoryModel: number = 0;
+        private departmentModel: number = 0;
 
         private update = false;
-        private item: Status|any = null;
+        private item: Task|any = null;
+
+        private quickResolveShow: boolean = false;
+        private quickResolveText: string = '';
+
+        private filterDepartment: number = 0;
+        private routesDepartments(){
+            let loggedUser = this.$store.state.loggedUser;
+            if (loggedUser !== null) {
+                return loggedUser.departments;
+            }
+            return [];
+        }
 
         private headers= [
             { text: '#Act', value: 'id', align: 'center' },
             { text: 'Name', value: 'name', align: 'center' },
+            { text: 'Description', value: 'description', align: 'center' },
             { text: 'Status', value: 'status', align: 'center' },
             { text: 'Impact', value: 'impact', align: 'center' },
             { text: 'Priority', value: 'priority', align: 'center' },
             { text: 'Actions', value: 'actions', align: 'center' },
         ];
 
-        private quickResolve(item: Task) {
+        private async quickResolve(item: Task) {
+            let configurations = await this.$store.getters.getConfigurationsByKey('quick_resolved');
+            if (configurations.length > 0){
+                let configuration =  configurations[configurations.length-1];
+                item.status = await this.$store.getters.getStatusById(Number(configuration.value));
+                this.$store.dispatch('updateTaskStatus', item);
+            }
 
         }
 
@@ -173,10 +205,15 @@
                 filterPriority: this.filterPriorityModel,
                 filterImpact: this.filterImpactModel,
                 filterCategory: this.filterCategoryModel,
+                filterDepartment: this.filterDepartment,
+                user: this.$store.state.loggedUser,
             };
             this.$store.dispatch('retrieveTasks', filters);
         }
         private async mounted(): Promise<void> {
+            if (this.$route.params.id) {
+                this.filterDepartment = Number(this.$route.params.id);
+            }
             await this.$store.dispatch('retrieveStatuses');
             await this.$store.dispatch('retrievePriorities');
             await this.$store.dispatch('retrieveImpacts');
@@ -214,8 +251,18 @@
                 filterPriority: this.filterPriorityModel,
                 filterImpact: this.filterImpactModel,
                 filterCategory: this.filterCategoryModel,
+                filterDepartment: this.filterDepartment,
+                user: this.$store.state.loggedUser,
             };
             this.$store.dispatch('retrieveTasks', filters);
+            let configs = await this.$store.getters.getConfigurationsByKey('quick_resolved');
+            if(configs.length > 0) {
+                if (Number(configs[configs.length-1].value) !== 0) {
+                    this.quickResolveShow = true;
+                    let qr = await this.$store.getters.getStatusById(Number(configs[configs.length-1].value))
+                    this.quickResolveText = qr.name;
+                }
+            }
 
         }
 
@@ -226,7 +273,8 @@
                 Number(this.priorityModel) != 0 &&
                 Number(this.impactModel) != 0 &&
                 Number(this.statusModel) != 0 &&
-                Number(this.userAsignedModel) != 0) {
+                Number(this.userAsignedModel) != 0 &&
+                Number(this.departmentModel) != 0) {
                 if(this.update === true) {
                     this.updateItem(this.item);
                 }else{
@@ -235,7 +283,6 @@
             }
 
             this.dialog = false;
-            console.log(this.statusModel);
         }
         private openDialog(item: Task|null = null): void {
             this.dialog = true;
@@ -248,16 +295,19 @@
                 this.priorityModel = 0;
                 this.impactModel = 0;
                 this.categoryModel = 0;
+                this.departmentModel = 0;
                 this.update = false;
             }else {
                 this.nameInsert = item.name;
                 this.descriptionInsert = item.description;
                 this.commentsInsert = item.comments;
-                this.userAsignedModel = Number(item.assignedUser);
-                this.statusModel = Number(item.status);
-                this.priorityModel = Number(item.priority);
-                this.impactModel = Number(item.impact);
-                this.categoryModel = Number(item.category);
+                this.userAsignedModel = Number((item.assignedUser != null)?item.assignedUser.id:0);
+                this.statusModel = Number((item.status != null)? item.status.id: 0);
+                this.priorityModel = Number((item.priority != null)? item.priority.id: 0);
+                this.impactModel = Number((item.impact != null)? item.impact.id: 0);
+                this.categoryModel = Number((item.category != null)? item.category.id: 0);
+                this.departmentModel = Number((item.department != null)? item.department.id: 0);
+
                 this.update = true;
             }
         }
@@ -265,31 +315,32 @@
             this.item = item;
             this.openDialog(item);
         }
-        private storeItem(): void {
+        private async storeItem(): Promise<void> {
             let item = new Task();
             item.name = this.nameInsert;
             item.description = this.descriptionInsert;
-            item.impact = String(this.impactModel);
-            item.status = String(this.statusModel);
-            item.category = String(this.categoryModel);
-            item.priority = String(this.priorityModel);
-            item.assignedUser = String(this.userAsignedModel);
-            item.assignedByUser = String(this.$store.state.loggedUser.id);
+            item.impact = await this.$store.getters.getImpactById(Number(this.impactModel));
+            item.status = await this.$store.getters.getStatusById(Number(this.statusModel));
+            item.category = await this.$store.getters.getCategoryById(Number(this.categoryModel));
+            item.priority = await this.$store.getters.getPriorityById(Number(this.priorityModel));
+            item.assignedUser = await this.$store.getters.getUserById(Number(this.userAsignedModel));
+            item.assignedByUser = await this.$store.getters.getUserById(Number(this.$store.state.loggedUser.id));
+            item.department = await this.$store.getters.getDepartmentById(Number(this.departmentModel));
             item.comments = this.commentsInsert;
             this.$store.dispatch('storeTask',item);
-            console.log(item);
         }
-        private updateItem(item: Task): void {
+        private async updateItem(item: Task): Promise<void> {
             let itemUpdate = new Task();
             itemUpdate.id = this.item.id;
             itemUpdate.name = this.nameInsert;
             itemUpdate.description = this.descriptionInsert;
-            itemUpdate.impact = String(this.impactModel);
-            itemUpdate.status = String(this.statusModel);
-            itemUpdate.category = String(this.categoryModel);
-            itemUpdate.priority = String(this.priorityModel);
-            itemUpdate.assignedUser = String(this.userAsignedModel);
-            itemUpdate.assignedByUser = String(this.$store.state.loggedUser);
+            itemUpdate.impact = await this.$store.getters.getImpactById(Number(this.impactModel));
+            itemUpdate.status = await this.$store.getters.getStatusById(Number(this.statusModel));
+            itemUpdate.category = await this.$store.getters.getCategoryById(Number(this.categoryModel));
+            itemUpdate.priority = await this.$store.getters.getPriorityById(Number(this.priorityModel));
+            itemUpdate.assignedUser = await this.$store.getters.getUserById(Number(this.userAsignedModel));
+            itemUpdate.assignedByUser = await this.$store.getters.getUserById(Number(this.$store.state.loggedUser.id));
+            itemUpdate.department = await this.$store.getters.getDepartmentById(Number(this.departmentModel));
             itemUpdate.comments = this.commentsInsert;
             this.$store.dispatch('updateTask',itemUpdate);
         }
@@ -300,6 +351,17 @@
         openDialogDeleteItem(item: Status) {
             this.item = item;
             this.dialogDelete = true;
+        }
+        private exportToExcel() {
+            let filters = {
+                filterStatus: this.filterStatusModel,
+                filterPriority: this.filterPriorityModel,
+                filterImpact: this.filterImpactModel,
+                filterCategory: this.filterCategoryModel,
+                filterDepartment: this.filterDepartment,
+                user: this.$store.state.loggedUser,
+            };
+            this.$store.dispatch('exportTasks', filters);
         }
     }
 </script>
