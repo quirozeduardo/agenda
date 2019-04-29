@@ -109,8 +109,15 @@ namespace PhpExcelHelperFormat {
             $name = $name . "_" . date('YmdHis') . ".xlsx";
             $writer = new \PHPExcel_Writer_Excel2007($this->phpExcel);
             try {
+                header("Content-Description: File Transfer");
                 header('Content-Type: application/vnd.ms-excel');
+                header("Pragma: public");
+                header("Expires: 0");
+                header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+                header("Content-Type: application/force-download");
+                header("Content-Type: application/download");
                 header('Content-Disposition: attachment; filename="' . $name . '"');
+                header("Content-Transfer-Encoding: chunked");
                 $writer->save("php://output");
             } catch (Exception $e) {
                 print_r('Error: ' . $e->getMessage());
