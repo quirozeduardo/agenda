@@ -760,7 +760,7 @@ export default new Vuex.Store({
             context.commit('SET_TASKS',objects);
         },
           async exportTasks(context, filters: FilterTastk): Promise<void> {
-              window.open(`dataScript/${UrlMaster.URL_EXPORT_DATA}?export=exportTasks&filters='${JSON.stringify(filters)}'`);
+              window.open(`dataScript/${UrlMaster.URL_EXPORT_DATA}?export=exportTasks&filters=${JSON.stringify(filters)}`);
           },
         async retrieveUsers(context): Promise<void> {
           let response = await Vue.axios.post(UrlMaster.URL_RETRIEVE_DATA,{
