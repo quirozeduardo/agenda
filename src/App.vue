@@ -106,7 +106,7 @@ export default class App extends Vue {
   private async mounted(): Promise<void> {
     await this.$store.dispatch('retrieveConfigurations');
     if (this.$store.state.loggedUser !== null && this.$store.state.loggedUser) {
-        this.nameUser = this.$store.state.loggedUser.name + ' ' + ((this.$store.state.loggedUser.lastName)?this.$store.state.loggedUser.lastName: '');
+        this.nameUser = this.$store.state.loggedUser.name + ' ' + ((this.$store.state.loggedUser.lastName !== null && this.$store.state.loggedUser.lastName !== undefined)?this.$store.state.loggedUser.lastName: '');
     } else {
         this.nameUser = '';
     }

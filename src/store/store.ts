@@ -325,7 +325,7 @@ export default new Vuex.Store({
                 user.id = Number(userResponse.id);
                 user.name = userResponse.name;
                 user.userName = userResponse.userName;
-                user.lastName = userResponse.lastName;
+                user.lastName = userResponse.last_name;
                 user.email = userResponse.email;
                 user.created_at = userResponse.created_at;
                 user.updated_at = userResponse.updated_at;
@@ -377,7 +377,7 @@ export default new Vuex.Store({
                 user.id = Number(userResponse.id);
                 user.name = userResponse.name;
                 user.userName = userResponse.userName;
-                user.lastName = userResponse.lastName;
+                user.lastName = userResponse.last_name;
                 user.email = userResponse.email;
                 user.created_at = userResponse.created_at;
                 user.updated_at = userResponse.updated_at;

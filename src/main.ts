@@ -6,7 +6,7 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 import router from './router';
 
-Vue.config.productionTip = false;
+Vue.config.productionTip = true;
 
 Vue.use(VueAxios, axios.create({
   baseURL: 'dataScript/'
