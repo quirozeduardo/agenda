@@ -5,7 +5,7 @@ $api_key = '91y83ux12317203471c2';
 $dataUsage = $data->data;
 switch ($section) {
     case 'login':
-        $response = login($mysql, $dataUsage->email, trim($dataUsage->password), trim($dataUsage->userName));
+        $response = login($mysql, trim($dataUsage->email), $dataUsage->password, trim($dataUsage->userName));
         break;
     case 'logout':
         $response = deleteRememberToken($mysql, $dataUsage->email);
