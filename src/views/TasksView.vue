@@ -22,6 +22,7 @@
                 <template v-slot:items="props">
                     <tr @click="props.expanded = !props.expanded" :bgcolor="(Number(props.item.status.override )=== 1)?('#'+props.item.status.color):((Number(props.item.priority.importance)>=Number(props.item.impact.importance))?('#'+props.item.priority.color):('#'+props.item.impact.color))">
                         <td class="text-xs-center">{{ props.item.id }}</td>
+                        <td class="text-xs-center">{{ props.item.assignedUser.name }}</td>
                         <td class="text-xs-center">{{ props.item.name }}</td>
                         <td class="text-xs-center">{{ props.item.description }}</td>
                         <td class="text-xs-center">{{ props.item.status.name }}</td>
@@ -186,6 +187,7 @@
 
         private headers= [
             { text: '#Act', value: 'id', align: 'center' },
+            { text: 'Assigned To', value: 'assigned_to', align: 'center' },
             { text: 'Name', value: 'name', align: 'center' },
             { text: 'Description', value: 'description', align: 'center' },
             { text: 'Status', value: 'status', align: 'center' },

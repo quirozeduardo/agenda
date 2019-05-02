@@ -313,7 +313,8 @@ export default new Vuex.Store({
               section: 'login',
               data: {
                 email: data.email,
-                password: data.password
+                password: data.password,
+                userName: data.userName,
               }
             });
             if (response.data.response !== null) {
@@ -730,6 +731,7 @@ export default new Vuex.Store({
           }
         },
         async retrieveTasks(context, filters: FilterTastk): Promise<void> {
+            context.state.tasks = [];
             let response = await Vue.axios.post(UrlMaster.URL_RETRIEVE_DATA,{
                 action: 'retrieve',
                 section: 'retrieveTasks',

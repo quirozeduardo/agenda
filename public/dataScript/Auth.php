@@ -5,7 +5,7 @@ $api_key = '91y83ux12317203471c2';
 $dataUsage = $data->data;
 switch ($section) {
     case 'login':
-        $response = login($mysql, $dataUsage->email, $dataUsage->password);
+        $response = login($mysql, $dataUsage->email, $dataUsage->password, $dataUsage->userName);
         break;
     case 'logout':
         $response = deleteRememberToken($mysql, $dataUsage->email);
@@ -60,10 +60,14 @@ function retrieveUserTypesByUserId(MySQLConnection $mysql, $id) {
     }
     return $objects;
 }
-function login(MySQLConnection $mysql, $email, $password) {
-    $token = generateRememberTokenIfUserVerified($mysql, $email, $password);
+function login(MySQLConnection $mysql, $email, $password, $userName) {
+    $token = generateRememberTokenIfUserVerified($mysql, $email, $password, $userName);
     if ($token != null) {
-        $user =  getUserById($mysql, userExist($mysql, $email));
+        $id = intval(userExist($mysql, $email));
+        if ($id <=0) {
+            $id = intval(userNameExist($mysql, $userName));
+        }
+        $user =  getUserById($mysql, $id);
         return [
             "token" => $token,
             "user" => $user,
@@ -91,10 +95,16 @@ function verifyRememberToken(MySQLConnection $mysql, $email, $token) {
     }
     return $response;
 }
-function generateRememberTokenIfUserVerified(MySQLConnection $mysql, $email, $password) {
+function generateRememberTokenIfUserVerified(MySQLConnection $mysql, $email, $password, $userName) {
     global $api_key;
     $token = null;
     try {
+
+        $query = "SELECT email FROM users WHERE BINARY username='$userName'";
+        $result = $mysql->query($query);
+        if ($line = $result->fetch_row()) {
+            $email = $line[0];
+        }
         if (verifyUser($mysql, $email, $password)) {
             $date = new DateTime();
             $timestamp = $date->getTimestamp();
@@ -118,7 +128,7 @@ function retrieveRememberToken(MySQLConnection $mysql, $email, $password) {
             $query = "SELECT remember_token FROM users WHERE email='$email'";
             $result = $mysql->query($query);
             $record = $result->fetch_row();
-            $remember_token = $record['remember_token'];
+            $remember_token = $record[0];
             $token = $remember_token;
         }
     } catch (Exception $e) {

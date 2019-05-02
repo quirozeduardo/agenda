@@ -9,7 +9,7 @@
                     </v-toolbar>
                     <v-card-text>
                         <v-form>
-                            <v-text-field prepend-icon="fa-user" name="login" label="Login" type="text" v-model="email" required :rules="[textFieldRequierd, validEmail]"></v-text-field>
+                            <v-text-field prepend-icon="fa-user" name="login" label="Login" type="text" v-model="email" required :rules="[textFieldRequierd]"></v-text-field>
                             <v-text-field prepend-icon="fa-envelope" name="password" label="Password" type="password" v-model="password" required :rules="[textFieldRequierd, passwordValidation]"></v-text-field>
                         </v-form>
                     </v-card-text>
@@ -51,9 +51,6 @@
         }
         public textFieldRequierd(v: any) {
             return !!v || 'This Field is required'
-        }
-        public validEmail(v: any) {
-            return /.+@.+/.test(v) || 'E-mail must be valid'
         }
         public passwordValidation(v: string) {
             return v.length > 5 || 'Password must contain more than 5 characters'

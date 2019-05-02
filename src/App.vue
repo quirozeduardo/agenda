@@ -42,7 +42,12 @@
                     <v-btn to="/register" flat>Register</v-btn>
                 </v-toolbar-items>
                 <v-toolbar-items v-else>
-                    <v-btn to="/logout" flat>Log Out</v-btn>
+                    <h4 class="mt-2">
+                        {{ nameUser }}
+                    </h4>
+                    <v-btn to="/logout" flat>
+                        <v-icon>fas fa-sign-out-alt</v-icon>
+                    </v-btn>
                 </v-toolbar-items>
             </v-toolbar>
             <v-content>
@@ -63,6 +68,7 @@ import { Component, Vue } from 'vue-property-decorator';
 })
 export default class App extends Vue {
   private drawer: boolean = true;
+  private nameUser: string = '';
   private routesDepartments(){
       let loggedUser = this.$store.state.loggedUser;
       let routesDepartments = [];
@@ -99,7 +105,11 @@ export default class App extends Vue {
   }
   private async mounted(): Promise<void> {
     await this.$store.dispatch('retrieveConfigurations');
-
+    if (this.$store.state.loggedUser !== null && this.$store.state.loggedUser) {
+        this.nameUser = this.$store.state.loggedUser.name + ' ' + ((this.$store.state.loggedUser.lastName)?this.$store.state.loggedUser.lastName: '');
+    } else {
+        this.nameUser = '';
+    }
   }
 }
 </script>
