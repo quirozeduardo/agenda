@@ -36,10 +36,6 @@ module.exports = {
                 ]
             },
             {
-                test: /\.styl$/,
-                loader: [MiniCssExtractPlugin.loader,'style-loader', 'css-loader', 'stylus-loader']
-            },
-            {
                 test: /\.(png|svg|jpg|jpeg|gif)$/,
                 use: [{
                  loader: 'file-loader',
