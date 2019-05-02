@@ -12,12 +12,13 @@
             <v-btn color="success" @click="exportToExcel()" >Excel</v-btn>
         </v-flex>
         <v-flex>
-            <v-toolbar flat color="white">
-                <v-toolbar-title>Task Table</v-toolbar-title>
+            <v-card-title>
+                Tasks
                 <v-spacer></v-spacer>
+                <v-text-field v-model="search" append-icon="fa-search" label="Search" single-line hide-details></v-text-field>
                 <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New Task</v-btn>
-            </v-toolbar>
-            <v-data-table :headers="headers" :items="this.$store.state.tasks" item-key="name">
+            </v-card-title>
+            <v-data-table :headers="headers" :items="this.$store.state.tasks" item-key="name" :search="search">
                 <template v-slot:items="props">
                     <tr @click="props.expanded = !props.expanded" :bgcolor="(Number(props.item.status.override )=== 1)?('#'+props.item.status.color):((Number(props.item.priority.importance)>=Number(props.item.impact.importance))?('#'+props.item.priority.color):('#'+props.item.impact.color))">
                         <td class="text-xs-center">{{ props.item.id }}</td>
@@ -59,41 +60,43 @@
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
+                        <v-form v-model="valid">
                         <v-layout wrap>
                             <v-flex xs12>
-                                <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                                <v-text-field label="Name*" v-model="nameInsert" :rules="[textFieldRequierd]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field label="Description" v-model="descriptionInsert"></v-text-field>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="userAsignedModel" :items="this.$store.state.users" item-text="name" item-value="id" label="Assigned to*">
+                                <v-select v-model="userAsignedModel" :items="this.$store.state.users" item-text="name" item-value="id" label="Assigned to*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="statusModel" :items="this.$store.state.statuses" item-text="name" item-value="id" label="Status*">
+                                <v-select v-model="statusModel" :items="this.$store.state.statuses" item-text="name" item-value="id" label="Status*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="priorityModel" :items="this.$store.state.priorities" item-text="name" item-value="id" label="Priority*">
+                                <v-select v-model="priorityModel" :items="this.$store.state.priorities" item-text="name" item-value="id" label="Priority*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="impactModel" :items="this.$store.state.impacts" item-text="name" item-value="id" label="Impact*">
+                                <v-select v-model="impactModel" :items="this.$store.state.impacts" item-text="name" item-value="id" label="Impact*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="categoryModel" :items="this.$store.state.categories" item-text="name" item-value="id" label="Category*">
+                                <v-select v-model="categoryModel" :items="this.$store.state.categories" item-text="name" item-value="id" label="Category*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
-                                <v-select v-model="departmentModel" :items="routesDepartments()" item-text="name" item-value="id" label="Department*">
+                                <v-select v-model="departmentModel" :items="routesDepartments()" item-text="name" item-value="id" label="Department*" :rules="[selectFieldRequierd]" required>
                                 </v-select>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field label="Comments" v-model="commentsInsert"></v-text-field>
                             </v-flex>
                         </v-layout>
+                        </v-form>
                     </v-container>
                     <small>*indicates required field</small>
                 </v-card-text>
@@ -140,6 +143,8 @@
     import Task from "../objects/types/Task";
     @Component
     export default class TasksView extends Vue {
+        private valid: boolean = false;
+        private search: string = '';
         private statusOptions: Status[] = [];
         private priorityOptions: Priority[] = [];
         private impactOptions: Impact[] = [];
@@ -268,6 +273,9 @@
 
 
         private saveItem(): void {
+            if (this.valid !== true) {
+                return
+            }
             if (this.nameInsert.trim().length > 0 &&
             Number(this.categoryModel) != 0 &&
                 Number(this.priorityModel) != 0 &&
@@ -363,6 +371,13 @@
             };
             this.$store.dispatch('exportTasks', filters);
         }
+        public textFieldRequierd(v: any) {
+            return !!v || 'This Field is required'
+        }
+        public selectFieldRequierd(v: any) {
+            return !!v || 'You must select one'
+        }
+
     }
 </script>
 

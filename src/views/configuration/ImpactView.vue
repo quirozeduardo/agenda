@@ -29,9 +29,10 @@
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
+                        <v-form v-model="valid">
                         <v-layout wrap>
                             <v-flex xs12>
-                                <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                                <v-text-field label="Name*" v-model="nameInsert" :rules="[textFieldRequierd]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-slider v-model="importanceInsert" :label="String(importanceInsert)" thumb-label="always" :thumb-color="'primary'" :max="100" :min="1"></v-slider>
@@ -43,6 +44,7 @@
                                 <v-text-field label="Description" v-model="descriptionInsert"></v-text-field>
                             </v-flex>
                         </v-layout>
+                        </v-form>
                     </v-container>
                     <small>*indicates required field</small>
                 </v-card-text>
@@ -82,6 +84,7 @@
     import  Impact from "../../objects/types/Impact";
     @Component
     export default class ImpactView extends Vue {
+        private valid: boolean =  false;
         private dialog: boolean = false;
         private dialogDelete: boolean = false;
         private search: any = '';
@@ -158,6 +161,9 @@
         openDialogDeleteItem(item: Impact) {
             this.item = item;
             this.dialogDelete = true;
+        }
+        public textFieldRequierd(v: any) {
+            return !!v || 'This Field is required'
         }
     }
 </script>

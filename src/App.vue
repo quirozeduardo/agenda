@@ -1,52 +1,55 @@
 <template>
-  <div id="app">
-    <v-app>
-      <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.mdAndUp" app v-model="drawer" v-if="this.$store.state.logged" width="250">
-        <v-list dense>
-          <v-list-tile to="/home">
-            <v-list-tile-action>
-              <v-icon>fa fa-home</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-title>Main</v-list-tile-title>
-          </v-list-tile>
-          <v-list-tile v-for="route in routesDepartments()" :key="route.id" :to="route.route">
-            <v-list-tile-action>
-              <v-icon>fa fa-folder</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-title>{{ route.title}}</v-list-tile-title>
-          </v-list-tile>
-          <v-divider></v-divider>
-          <v-list-tile v-if="isAdmin()" to="/users">
-            <v-list-tile-action>
-              <v-icon>fa fa-users</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-title>Users</v-list-tile-title>
-          </v-list-tile>
-          <v-list-tile v-if="isAdmin()" to="/configuration">
-            <v-list-tile-action>
-              <v-icon>fa fa-cog</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-title>Configuration</v-list-tile-title>
-          </v-list-tile>
-        </v-list>
-      </v-navigation-drawer>
-      <v-toolbar color="blue darken-3" dark app :clipped-left="$vuetify.breakpoint.mdAndUp" fixed dark height="40">
-        <v-toolbar-title>
-          <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-          <span class="hidden-sm-and-down">Agenda</span>
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items v-if="!this.$store.state.logged" >
-          <v-btn to="/login" flat>Login</v-btn>
-          <v-btn to="/register" flat>Register</v-btn>
-        </v-toolbar-items>
-        <v-toolbar-items v-else>
-          <v-btn to="/logout" flat>Log Out</v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-content>
-        <router-view :key="$route.fullPath"></router-view>
-      </v-content>
+  <div id="content-main">
+    <v-app dark>
+        <div class="bg-joyson">
+            <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.mdAndUp" app v-model="drawer" v-if="this.$store.state.logged" width="250">
+                <v-list dense>
+                    <v-list-tile to="/home">
+                        <v-list-tile-action>
+                            <v-icon>fa fa-home</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Main</v-list-tile-title>
+                    </v-list-tile>
+                    <v-list-tile v-for="route in routesDepartments()" :key="route.id" :to="route.route">
+                        <v-list-tile-action>
+                            <v-icon>fa fa-folder</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>{{ route.title}}</v-list-tile-title>
+                    </v-list-tile>
+                    <v-divider></v-divider>
+                    <v-list-tile v-if="isAdmin()" to="/users">
+                        <v-list-tile-action>
+                            <v-icon>fa fa-users</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Users</v-list-tile-title>
+                    </v-list-tile>
+                    <v-list-tile v-if="isAdmin()" to="/configuration">
+                        <v-list-tile-action>
+                            <v-icon>fa fa-cog</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Configuration</v-list-tile-title>
+                    </v-list-tile>
+                </v-list>
+            </v-navigation-drawer>
+            <v-toolbar color="blue darken-3" dark app :clipped-left="$vuetify.breakpoint.mdAndUp" fixed dark height="40">
+                <v-toolbar-title>
+                    <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+                    <span class="hidden-sm-and-down">JOYSONQUIN</span>
+                </v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-toolbar-items v-if="!this.$store.state.logged" >
+                    <v-btn to="/login" flat>Login</v-btn>
+                    <v-btn to="/register" flat>Register</v-btn>
+                </v-toolbar-items>
+                <v-toolbar-items v-else>
+                    <v-btn to="/logout" flat>Log Out</v-btn>
+                </v-toolbar-items>
+            </v-toolbar>
+            <v-content>
+                <!--<v-progress-linear :indeterminate="true"></v-progress-linear>-->
+                <router-view :key="$route.fullPath"></router-view>
+            </v-content>
+        </div>
     </v-app>
   </div>
 </template>
@@ -102,5 +105,13 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
-  @import '~vuetify/dist/vuetify.css';
+  @import "~vuetify/dist/vuetify.min.css";
+  .theme--light.application {
+      background: transparent;
+  }
+    .bg-joyson{
+        background: #000000;
+        height: 100%;
+        opacity: 0.9;
+    }
 </style>

@@ -33,6 +33,9 @@ switch ($section) {
             $dataUsage->_department->_id,
             $dataUsage->_comments);
         break;
+    case 'storeUserAdmin':
+        $response = storeUserAdmin($mysql, $dataUsage->_name,$dataUsage->_lastName,$dataUsage->_userName,$dataUsage->_email,$dataUsage->_password, $dataUsage->_departments, $dataUsage->_userTypes);
+        break;
 }
 echoResponse();
 function storeCategory(MySQLConnection $mysql, $name, $description) {
@@ -192,4 +195,64 @@ function storeTask(MySQLConnection $mysql,
         var_dump($e->getMessage());
     }
     return $object;
+}
+
+function storeUserAdmin(MySQLConnection $mysql,$name,$lastName,$userName,$email,$password, $departments, $userTypes){
+    if (userNameExist($mysql, $userName)>0) {
+        return 'username_exist';
+    }
+    if(userExist($mysql, $email)>0) {
+        return 'email_exist';
+    }
+
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $query = "INSERT INTO 
+            users(username, name, last_name, email, password, created_at, updated_at) 
+            VALUES ('$userName', '$name', '$lastName', '$email', '$hash', now(), now())";
+    try {
+        $mysql->query($query);
+        $id =  $mysql->connection->insert_id;
+        $mysql->query("DELETE FROM user_departments WHERE user_id = $id");
+        foreach ($departments as $department) {
+            $mysql->query("INSERT INTO user_departments(user_id, department_id) VALUES ($id, $department->_id)");
+        }
+        $mysql->query("DELETE FROM user_type WHERE user_id = $id");
+        foreach ($userTypes as $userType) {
+            $mysql->query("INSERT INTO user_type(user_id, type_id) VALUES ($id, $userType->_id)");
+        }
+        return 'success';
+    }catch (Exception $e) {
+        return 'fail';
+    }
+}
+
+function userExist(MySQLConnection $mysql, $email, $id=0) {
+    $id = 0;
+    try {
+        $query = "SELECT id FROM users WHERE BINARY email='$email'";
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $id = intval($record[0]);
+        }
+
+    } catch (Exception $e) {
+
+    }
+    return $id;
+}
+function userNameExist(MySQLConnection $mysql, $userName) {
+    $id = 0;
+    try {
+        $query = "SELECT id FROM users WHERE BINARY username='$userName'";
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $id = intval($record[0]);
+        }
+
+    } catch (Exception $e) {
+
+    }
+    return $id;
 }

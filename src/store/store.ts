@@ -239,7 +239,9 @@ export default new Vuex.Store({
               state.userTypeAdmin[index].description = data.description;
           }
       },
-
+      ADD_USER_ADMIN(state, data: UserAdmin) {
+            state.usersAdmin.push(data);
+      },
       REMOVE_USER(state, id: number) {
           let result = state.users.filter((item: User) => { return item.id === id});
           if (result.length > 0) {
@@ -277,8 +279,8 @@ export default new Vuex.Store({
       }
   },
   actions: {
-        async registerUser(context, data: UserRegister): Promise<boolean> {
-          let success = false;
+        async registerUser(context, data: UserRegister): Promise<number> {
+          let success:number = 0;
           try {
             let response = await Vue.axios.post(UrlMaster.URL_AUTH,{
               action: 'store',
@@ -292,15 +294,14 @@ export default new Vuex.Store({
               }
             });
             if (response.data.response === 'success') {
-              success = true;
-              let userLogin = new UserLogin();
-              userLogin.userName = data.userName;
-              userLogin.email = data.email;
-              userLogin.password = data.password;
-              await context.dispatch('login', userLogin);
+                success = 1;
+            } else if (response.data.response === 'username_exist'){
+                success = 2;
+            } else if (response.data.response === 'email_exist'){
+                success = 3;
             }
           }catch (e) {
-            success = false;
+            success = 0;
           }
           return  success;
         },
@@ -1015,15 +1016,43 @@ export default new Vuex.Store({
               context.commit('UPDATE_USER',data);
           }
       },
-      async updateUserAdmin(context, data: UserAdmin): Promise<void> {
+      async storeUserAdmin(context, data: UserAdmin): Promise<number> {
+          let success:number = 0;
+          try {
+              let response = await Vue.axios.post(UrlMaster.URL_STORE_DATA,{
+                  action: 'store',
+                  section: 'storeUserAdmin',
+                  data: data
+              });
+              if (response.data.response === 'success') {
+                  await context.commit('ADD_USER_ADMIN',data);
+                  success = 1;
+              } else if (response.data.response === 'username_exist'){
+                  success = 2;
+              } else if (response.data.response === 'email_exist'){
+                  success = 3;
+              }
+          }catch (e) {
+              success = 0;
+          }
+          return  success;
+      },
+      async updateUserAdmin(context, data: UserAdmin): Promise<number> {
+            let success: number = 0;
           let response = await Vue.axios.post(UrlMaster.URL_UPDATE_DATA,{
               action: 'update',
               section: 'updateUserAdmin',
               data: data
           });
-          if (response.data.response === true) {
-              context.commit('UPDATE_USER_ADMIN',data);
+          if (response.data.response === 'success') {
+              await context.commit('UPDATE_USER_ADMIN',data);
+              success = 1;
+          } else if (response.data.response === 'username_exist'){
+              success = 2;
+          } else if (response.data.response === 'email_exist'){
+              success = 3;
           }
+          return success;
       }
     },
     getters : {

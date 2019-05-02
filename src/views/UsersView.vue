@@ -1,14 +1,15 @@
 <template>
     <v-container>
         <v-flex>
-            <v-toolbar flat color="white">
-                <v-toolbar-title>Users Table</v-toolbar-title>
+            <v-card-title>
+                Users
                 <v-spacer></v-spacer>
+                <v-text-field v-model="search" append-icon="fa-search" label="Search" single-line hide-details></v-text-field>
                 <v-btn color="primary" dark class="mb-2" v-on:click="openDialog()">New User</v-btn>
-            </v-toolbar>
-            <v-data-table :headers="headers" :items="this.$store.state.usersAdmin" item-key="name">
+            </v-card-title>
+            <v-data-table :headers="headers" :items="this.$store.state.usersAdmin" item-key="name" :search="search">
                 <template v-slot:items="props">
-                    <tr @click="props.expanded = !props.expanded" bgcolor="#B2EBF2">
+                    <tr @click="props.expanded = !props.expanded">
                         <td class="text-xs-center">{{ props.item.id }}</td>
                         <td class="text-xs-center">{{ props.item.name }}</td>
                         <td class="text-xs-center">{{ props.item.lastName}}</td>
@@ -17,7 +18,7 @@
                             <v-chip v-for="department in props.item.departments" small color="primary" :key="department.id" text-color="white">{{department.name}}</v-chip>
                         </td>
                         <td class="text-xs-center">
-                            <v-chip v-for="userType in props.item.userTypes" small color="secondary" :key="userType.id" text-color="white">{{userType.name}}</v-chip>
+                            <v-chip v-for="userType in props.item.userTypes" small color="teal" :key="userType.id" text-color="white">{{userType.name}}</v-chip>
                         </td>
                         <td class="justify-center layout px-0">
                             <v-icon small class="mr-2" @click="editItem(props.item)">
@@ -37,19 +38,23 @@
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">Task</span>
+                    <span class="headline">User</span>
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
+                        <v-form v-model="valid">
                         <v-layout wrap>
                             <v-flex xs12>
-                                <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                                <v-text-field label="Name*" v-model="nameInsert" :rules="[textFieldRequierd]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
-                                <v-text-field label="Last Name" v-model="lastNameInsert"></v-text-field>
+                                <v-text-field label="Last Name*" v-model="lastNameInsert" :rules="[textFieldRequierd]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
-                                <v-text-field label="Email" v-model="emailInsert"></v-text-field>
+                                <v-text-field label="User Name*" v-model="userNameInsert" :rules="[textFieldRequierd]" required></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field label="Email*" v-model="emailInsert" :rules="[textFieldRequierd, validEmail]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-combobox v-model="selectDepartments" item-text="name" :items="this.$store.state.departmentsAdmin" label="Select departments" multiple
@@ -59,10 +64,23 @@
                                 <v-combobox v-model="selectUserTypes" item-text="name" :items="this.$store.state.userTypeAdmin" label="Select User Types" multiple
                                 ></v-combobox>
                             </v-flex>
+                            <input style="display:none">
+                            <input type="password" style="display:none">
+                            <input style="display:none">
+                            <v-flex xs12>
+                                <v-text-field label="Password" type="password" v-model="password" ></v-text-field>
+                            </v-flex>
+                            <input style="display:none">
+                            <v-flex xs12>
+                                <v-text-field label="Confirm Password" type="password" :rules="[passwordConfirmtionValidation]" v-model="confirmPassword"></v-text-field>
+                            </v-flex>
                         </v-layout>
+                        </v-form>
                     </v-container>
                     <small>*indicates required field</small>
                 </v-card-text>
+                <v-alert :value="userNameInUse" type="error" v-on:click="userNameInUse=false">This User Name is in use.</v-alert>
+                <v-alert :value="emailInUse" type="error" v-on:click="emailInUse=false">This Email is in use.</v-alert>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" flat @click="dialog = false">Close</v-btn>
@@ -103,6 +121,8 @@
 
     @Component
     export default class Users extends Vue {
+        private valid: boolean = false;
+        private search: string = '';
         private headers= [
             { text: 'Id', value: 'id', align: 'center' },
             { text: 'Name', value: 'name', align: 'center' },
@@ -117,16 +137,23 @@
         private dialog: boolean =  false;
         private dialogDelete: boolean =  false;
 
-        private search: string = '';
         private selectDepartments: Department[] = [];
         private selectUserTypes: UserType[] = [];
 
         private nameInsert: string = '';
+        private userNameInsert: string = '';
         private lastNameInsert: string = '';
         private emailInsert: string = '';
+        private password: string = '';
+        private confirmPassword: string = '';
+
+        private userNameInUse: boolean = false;
+        private emailInUse: boolean = false;
 
         private saveItem(): void {
-            console.log(this.selectDepartments);
+            if (this.valid!== true) {
+                return;
+            }
             if (this.nameInsert.trim().length > 0) {
                 if(this.update === true) {
                     this.updateItem(this.item);
@@ -135,19 +162,28 @@
                 }
             }
 
-            this.dialog = false;
         }
         private openDialog(item: UserAdmin|null = null): void {
             this.dialog = true;
             if (item === null) {
                 this.nameInsert = '';
+                this.lastNameInsert = '';
+                this.emailInsert = '';
+                this.userNameInsert = '';
+                this.selectDepartments = [];
+                this.selectUserTypes = [];
+                this.password = '';
+                this.confirmPassword = '';
                 this.update = false;
             }else {
                 this.nameInsert = item.name;
                 this.lastNameInsert = item.lastName;
+                this.userNameInsert = item.userName;
                 this.emailInsert = item.email;
                 this.selectDepartments = item.departments;
                 this.selectUserTypes = item.userTypes;
+                this.password = '';
+                this.confirmPassword = '';
                 this.update = true;
             }
         }
@@ -156,10 +192,32 @@
             this.openDialog(item);
         }
         private async storeItem(): Promise<void> {
-            let item = new UserAdmin();
-            item.name = this.nameInsert;0
-            //this.$store.dispatch('storeTask',item);
-            console.log(item);
+            let itemUpdate = new UserAdmin();
+            itemUpdate.name = this.nameInsert;
+            itemUpdate.lastName = this.lastNameInsert;
+            itemUpdate.email = this.emailInsert;
+            itemUpdate.departments = this.selectDepartments;
+            itemUpdate.userTypes = this.selectUserTypes;
+            itemUpdate.userName = this.userNameInsert;
+            if (this.password.length>0) {
+                if (this.password.trim() === this.confirmPassword.trim()) {
+                    itemUpdate.password = this.password;
+                }
+            }
+            let response:number = await this.$store.dispatch('storeUserAdmin',itemUpdate);
+            if (response === 2) {
+                this.userNameInUse = true;
+                setTimeout(()=> {
+                    this.userNameInUse = false;
+                },5000);
+            } else if(response === 3){
+                this.emailInUse = true;
+                setTimeout(()=> {
+                    this.emailInUse = false;
+                },5000);
+            }else if (response === 1) {
+                this.dialog = false;
+            }
         }
         private async updateItem(item: UserAdmin): Promise<void> {
             let itemUpdate = new UserAdmin();
@@ -169,11 +227,29 @@
             itemUpdate.email = this.emailInsert;
             itemUpdate.departments = this.selectDepartments;
             itemUpdate.userTypes = this.selectUserTypes;
-            itemUpdate.userName = item.userName;
+            itemUpdate.userName = this.userNameInsert;
+            if (this.password.length>0) {
+                if (this.password.trim() === this.confirmPassword.trim()) {
+                    itemUpdate.password = this.password;
+                }
+            }
             itemUpdate.deleted_at = item.deleted_at;
             itemUpdate.updated_at = item.updated_at;
             itemUpdate.created_at = item.created_at;
-            this.$store.dispatch('updateUserAdmin',itemUpdate);
+            let response:number = await this.$store.dispatch('updateUserAdmin',itemUpdate);
+            if (response === 2) {
+                this.userNameInUse = true;
+                setTimeout(()=> {
+                    this.userNameInUse = false;
+                },5000);
+            } else if(response === 3){
+                this.emailInUse = true;
+                setTimeout(()=> {
+                    this.emailInUse = false;
+                },5000);
+            }else if (response === 1) {
+                this.dialog = false;
+            }
         }
         private deleteItem(item: UserAdmin): void {
             this.dialogDelete = false;
@@ -203,6 +279,15 @@
             await this.$store.dispatch('retrieveDepartmentsAdmin');
             await this.$store.dispatch('retrieveUserTypesAdmin');
             await this.$store.dispatch('retrieveUsersAdmin');
+        }
+        public textFieldRequierd(v: any) {
+            return !!v || 'This Field is required'
+        }
+        public validEmail(v: any) {
+            return /.+@.+/.test(v) || 'E-mail must be valid'
+        }
+        public passwordConfirmtionValidation(v: string) {
+            return String(v) === this.password || 'Password Not Match'
         }
     }
 </script>

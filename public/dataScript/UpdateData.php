@@ -41,7 +41,7 @@ switch ($section) {
         $response = updateUser($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_email, $dataUsage->_lastName, $dataUsage->_userName);
         break;
     case 'updateUserAdmin':
-        $response = updateUserAdmin($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_email, $dataUsage->_lastName, $dataUsage->_departments, $dataUsage->_userTypes, $dataUsage->_userName, $dataUsage->_deleted_at);
+        $response = updateUserAdmin($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_email, $dataUsage->_lastName, $dataUsage->_departments, $dataUsage->_userTypes, $dataUsage->_userName, $dataUsage->_deleted_at, $dataUsage->_password);
         break;
 
 }
@@ -116,15 +116,27 @@ function updateUser(MySQLConnection $mysql, $id, $name, $email, $lastName, $user
         $mysql->query($query);
         return true;
     }catch (Exception $e) {
-        var_dump($e->getMessage());
         return false;
     }
 }
-function updateUserAdmin(MySQLConnection $mysql, $id, $name, $email, $lastName, $departments, $userTypes,  $username, $deleted) {
+function updateUserAdmin(MySQLConnection $mysql, $id, $name, $email, $lastName, $departments, $userTypes,  $username, $deleted, $password) {
+    if (intval(userNameExist($mysql, $username, $id))>0) {
+        return 'username_exist';
+    }
+    if(intval(userExist($mysql, $email, $id))>0) {
+        return 'email_exist';
+    }
     $deleted = ($deleted==null)?'NULL': $deleted;
     $query = "UPDATE users SET name='$name', email='$email', last_name='$lastName', username='$username', deleted_at=$deleted, updated_at=now() WHERE id=$id";
     try {
         $mysql->query($query);
+        if ($password !== null) {
+            if (strlen($password)>5) {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $query = "UPDATE users SET password='$hash', updated_at=now() WHERE id=$id";
+                $mysql->query($query);
+            }
+        }
         $mysql->query("DELETE FROM user_departments WHERE user_id = $id");
         foreach ($departments as $department) {
             $mysql->query("INSERT INTO user_departments(user_id, department_id) VALUES ($id, $department->_id)");
@@ -133,10 +145,10 @@ function updateUserAdmin(MySQLConnection $mysql, $id, $name, $email, $lastName, 
         foreach ($userTypes as $userType) {
             $mysql->query("INSERT INTO user_type(user_id, type_id) VALUES ($id, $userType->_id)");
         }
-        return true;
+        return 'success';
     }catch (Exception $e) {
         var_dump($e->getMessage());
-        return false;
+        return 'error';
     }
 }
 function updateTask(MySQLConnection $mysql,
@@ -161,4 +173,35 @@ function updateTask(MySQLConnection $mysql,
         return false;
     }    
 
+}
+
+function userExist(MySQLConnection $mysql, $email, $id) {
+    $idRt = 0;
+    try {
+        $query = "SELECT id FROM users WHERE BINARY email='$email' AND id != $id";
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $idRt = intval($record[0]);
+        }
+
+    } catch (Exception $e) {
+
+    }
+    return $idRt;
+}
+function userNameExist(MySQLConnection $mysql, $userName, $id) {
+    $idRt = 0;
+    try {
+        $query = "SELECT id FROM users WHERE BINARY username='$userName' AND id != $id";
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $idRt = intval($record[0]);
+        }
+
+    } catch (Exception $e) {
+
+    }
+    return $idRt;
 }

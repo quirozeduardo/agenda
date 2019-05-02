@@ -174,7 +174,22 @@ function verifyUser(MySQLConnection $mysql, $email, $password) {
 function userExist(MySQLConnection $mysql, $email) {
     $id = 0;
     try {
-        $query = "SELECT id FROM users WHERE email='$email'";
+        $query = "SELECT id FROM users WHERE BINARY email='$email'";
+        $result = $mysql->query($query);
+        if ($result->num_rows > 0) {
+            $record = $result->fetch_row();
+            $id = intval($record[0]);
+        }
+
+    } catch (Exception $e) {
+
+    }
+    return $id;
+}
+function userNameExist(MySQLConnection $mysql, $userName) {
+    $id = 0;
+    try {
+        $query = "SELECT id FROM users WHERE BINARY username='$userName'";
         $result = $mysql->query($query);
         if ($result->num_rows > 0) {
             $record = $result->fetch_row();
@@ -187,6 +202,14 @@ function userExist(MySQLConnection $mysql, $email) {
     return $id;
 }
 function registerNewUser(MySQLConnection $mysql,$name,$lastName,$userName,$email,$password) {
+
+    if (userNameExist($mysql, $userName)>0) {
+        return 'username_exist';
+    }
+    if(userExist($mysql, $email)>0) {
+        return 'email_exist';
+    }
+
     $hash = password_hash($password, PASSWORD_DEFAULT);
     $query = "INSERT INTO 
             users(username, name, last_name, email, password, created_at, updated_at) 

@@ -29,9 +29,10 @@
                 </v-card-title>
                 <v-card-text>
                     <v-container grid-list-md>
+                        <v-form v-model="valid">
                         <v-layout wrap>
                             <v-flex xs12>
-                                <v-text-field label="Name*" v-model="nameInsert" required></v-text-field>
+                                <v-text-field label="Name*" v-model="nameInsert" :rules="[textFieldRequierd]" required></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <p>Override</p>
@@ -47,6 +48,7 @@
                                 <v-text-field label="Description" v-model="descriptionInsert"></v-text-field>
                             </v-flex>
                         </v-layout>
+                        </v-form>
                     </v-container>
                     <small>*indicates required field</small>
                 </v-card-text>
@@ -86,6 +88,7 @@
     import  Status from "../../objects/types/Status";
     @Component
     export default class StatusView extends Vue {
+        private valid: boolean =  false;
         private dialog: boolean = false;
         private dialogDelete: boolean = false;
         private search: any = '';
@@ -161,6 +164,9 @@
         openDialogDeleteItem(item: Status) {
             this.item = item;
             this.dialogDelete = true;
+        }
+        public textFieldRequierd(v: any) {
+            return !!v || 'This Field is required'
         }
     }
 </script>
