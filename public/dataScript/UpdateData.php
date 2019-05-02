@@ -41,7 +41,7 @@ switch ($section) {
         $response = updateUser($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_email, $dataUsage->_lastName, $dataUsage->_userName);
         break;
     case 'updateUserAdmin':
-        $response = updateUserAdmin($mysql, $dataUsage->_id, $dataUsage->_name, $dataUsage->_email, $dataUsage->_lastName, $dataUsage->_departments, $dataUsage->_userTypes, $dataUsage->_userName, $dataUsage->_deleted_at, $dataUsage->_password);
+        $response = updateUserAdmin($mysql, $dataUsage->_id, $dataUsage->_name, trim($dataUsage->_email), $dataUsage->_lastName, $dataUsage->_departments, $dataUsage->_userTypes, trim($dataUsage->_userName), $dataUsage->_deleted_at, $dataUsage->_password);
         break;
 
 }

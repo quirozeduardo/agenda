@@ -5,7 +5,7 @@ $api_key = '91y83ux12317203471c2';
 $dataUsage = $data->data;
 switch ($section) {
     case 'login':
-        $response = login($mysql, $dataUsage->email, $dataUsage->password, $dataUsage->userName);
+        $response = login($mysql, $dataUsage->email, trim($dataUsage->password), trim($dataUsage->userName));
         break;
     case 'logout':
         $response = deleteRememberToken($mysql, $dataUsage->email);
@@ -17,7 +17,7 @@ switch ($section) {
         $response = verifyRememberToken($mysql, $dataUsage->email, $dataUsage->token);
         break;
     case 'register':
-        $response = registerNewUser($mysql, $dataUsage->name, $dataUsage->lastName, $dataUsage->userName, $dataUsage->email, $dataUsage->password);
+        $response = registerNewUser($mysql, $dataUsage->name, $dataUsage->lastName, trim($dataUsage->userName), trim($dataUsage->email), $dataUsage->password);
         break;
 }
 echoResponse();

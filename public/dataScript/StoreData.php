@@ -34,7 +34,7 @@ switch ($section) {
             $dataUsage->_comments);
         break;
     case 'storeUserAdmin':
-        $response = storeUserAdmin($mysql, $dataUsage->_name,$dataUsage->_lastName,$dataUsage->_userName,$dataUsage->_email,$dataUsage->_password, $dataUsage->_departments, $dataUsage->_userTypes);
+        $response = storeUserAdmin($mysql, $dataUsage->_name,$dataUsage->_lastName,trim($dataUsage->_userName),trim($dataUsage->_email),$dataUsage->_password, $dataUsage->_departments, $dataUsage->_userTypes);
         break;
 }
 echoResponse();
